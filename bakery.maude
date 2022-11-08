@@ -1,0 +1,27 @@
+mod Bakery is
+	protecting NAT .
+	including CONFIGURATION .
+	
+	sort GBState .
+	sorts BProcess Dispenser  .
+	sort Mode .
+	sorts sleep wait crit .
+	subsort sleep wait crit < Mode .
+	subsort BProcess Dispenser < Cid .
+	
+	op [[_]] : Configuration -> GBState .
+	
+	op BProcess : -> BProcess .
+	op mode:_ : Mode -> Attribute [gather (&)] .
+	op number:_ : Nat -> Attribute [gather (&)] . 
+	
+	op Dispenser -> Dispenser .
+	op next:_ : Nat -> Attribute [gather (&)] .
+	op last:_ : Nat -> Attribute [gather (&)] .
+	
+
+	op initial : Nat -> GBState .
+	
+
+
+endm
