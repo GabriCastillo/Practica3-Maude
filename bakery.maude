@@ -1,27 +1,57 @@
-mod Bakery is
-	protecting NAT .
-	including CONFIGURATION .
-	
-	sort GBState .
-	sorts BProcess Dispenser  .
-	sort Mode .
-	sorts sleep wait crit .
-	subsort sleep wait crit < Mode .
-	subsort BProcess Dispenser < Cid .
-	
-	op [[_]] : Configuration -> GBState .
-	
-	op BProcess : -> BProcess .
-	op mode:_ : Mode -> Attribute [gather (&)] .
-	op number:_ : Nat -> Attribute [gather (&)] . 
-	
-	op Dispenser -> Dispenser .
-	op next:_ : Nat -> Attribute [gather (&)] .
-	op last:_ : Nat -> Attribute [gather (&)] .
-	
+load parallel++.maude
 
-	op initial : Nat -> GBState .
-	
+mod DEKKER++ is
+    inc PARALLEL++ .
+    ops crit1 crit2 : -> UserStatement .
+    ops rem1 rem2 : -> LoopingUserStatement .
+    ops p1 p2 : -> Program .
+    op initial : -> MachineState .
+    op wants-to-enter : -> BoolVar .
+    op turn : -> IntVar .
+    var  M : Memory .
+    vars P R : Program .
+    var  S : Soup . 
+    var  I : Pid .
 
+    eq p1 
+      = repeat 
+            wants-to-enter[0] := true ;
+            while wants-to-enter[1] = true do
+                if turn != 0 then
+                    wants-to-enter[0] := false ;
+                    while turn != 0 do
+                        skip 
+                    od ;
+                    wants-to-enter[0] := true 
+                else 
+                    skip 
+                fi 
+            od ;
+            crit1 ;
+            turn := 1 ;
+            wants-to-enter[0] := false ;
+            rem1 
+        until true != true li .
 
+    eq p2 
+      = repeat 
+            wants-to-enter[1] := true ;
+            while wants-to-enter[0] = true do
+                if turn != 1 then
+                    wants-to-enter[1] := false ;
+                    while turn != 1 do
+                        skip 
+                    od ;
+                    wants-to-enter[1] := true 
+                else 
+                    skip 
+                fi 
+            od ;
+            crit2 ;
+            turn := 0 ;
+            wants-to-enter[1] := false ;
+            rem1 
+        until true != true li .
+
+    eq initial = { [1, p1] | [2, p2], [turn, 1]} .
 endm
