@@ -55,9 +55,11 @@ Por cómo están definidas las reglas de este problema, los estados [[< O : Disp
 
 ```
 op simplify : Configuration -> Configuration .
-	eq simplify(none) = none .
-	eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
-		= < N : BProcess | mode: M, number: N' > simplify(C) .
+eq simplify(none) = none .
+eq simplify(< N : BProcess | mode: M, number: 0 > C) 
+    = < N : BProcess | mode: M, number: 0 > simplify(C) .
+eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
+    = < N : BProcess | mode: M, number: N' > simplify(C) .
 ```
 
 Pero que se simplifique primero uno u otro elemento de la configuración, no influye, ya que al terminar la recursión ambos elementos estarán simplificados, y el resto de ellos también. Es decir una misma configuración de entrada confluye en una variación de esta en la que todos los clientes (_BProcess_) han decrementado el número del ticket en 1 si este era mayor que 1.  
