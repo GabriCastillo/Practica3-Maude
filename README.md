@@ -47,11 +47,60 @@ omo podemos ver no podemos demostrarlo con el comando search, ya que al ser el e
 
 ### 4 - Justifica la validez de la abstracción (protección de los booleanos, confluencia y terminación de la parte ecuacional, y coherencia de ecuaciones y reglas).
 
+Por cómo están definidas las reglas de este problema, los estados [[< O : Dispenser | next: s(N), last: s(M) > < 0 : BProcess | mode: M, number: s(N0) > < 1 : BProcess | mode: M, number: s(N1) > ...]] son equivalentes a [[< O : Dispenser | next: N, last: s(M) > < 0 : BProcess | mode: M, number: N0 > < 1 : BProcess | mode: M, number: N1 > ...]]. 
 
+- **Protección de los booleanos**: No se identifican _true_ y _false_, luego hay protección de los booleanos.
+
+- **Confluencia**: Las única ecuacion que podría dar lugar a que la especificación fuese no-confluente es _simplify_, ya que al estar definida para un tipo commutativo (_Configuration_) la misma expresión puede simplificarse escogiendo para simplificar cualquiera de sus elementos y luego el resto de ellos recursivamente. 
+
+```
+op simplify : Configuration -> Configuration .
+	eq simplify(none) = none .
+	eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
+		= < N : BProcess | mode: M, number: N' > simplify(C) .
+```
+
+Pero que se simplifique primero uno u otro elemento de la configuración, no influye, ya que al terminar la recursión ambos elementos estarán simplificados, y el resto de ellos también. Es decir una misma configuración de entrada confluye en una variación de esta en la que todos los clientes (_BProcess_) han decrementado el número del ticket en 1 si este era mayor que 1.  
+
+- **Terminación**: La parte ecuacional es terminante, al igual que lo era en _BAKERY_. Las únicas ecuaciones que podrían llevar a una no-terminación son las recursivas---en el caso de que hubiese ciclos. Pero en este caso, tanto _init_ como _simplify_ son terminantes. Vamos a demostrarlo.
+
+    - **_init_**: Está definida de forma recursiva y siempre que se llama decrementa el valor de entrada en 1. De forma que cuando llegue a 0, tiene un caso base `init(0) = none`, por lo que es terminante.
+
+    - **_simplify_**: Está definida de forma recursiva sobre un conjunto de elementos (_Configuration_), de forma que en cada llamada procesa uno de estos y llama recursivamente para procesar el resto del conjunto. De forma que cuando el conjunto se queda sin elementos esta recursión termina con el caso base `simplify(none) = none`. 
+
+- **Coherencia**: En este caso las únicas ecuaciones que se aplican entre ejecuciones de reglas son las de abstracción. Para demostrar que son coherentes basta con demostrar la igualdad `eq(rl(x)) = eq(rl(eq(x)))`. 
+
+Vamos a suponer que la función _rl_ es la equivalente `to_sleep(to_crit(to_wait(x)))` es decir la equivalente a que que un cliente haga un ciclo completo---entendiendo ciclo comom que entre a la tienda y pida el ticket `to_wait`, el panadero le atienda `to_crit` y una vez comprado el pan se vaya de la tienda `to_slepp`. Y que _eq_ es nuestra regla de simplificación. Dado que _rl_ es la comppsición de nuestras reglas, si _rl_ es coherente con _eq_ es porque todas ellas (las reglas) lo son---ya que si alguna no fuese coherente con _eq_ _rl_ tampoco lo sería. 
+
+Sea _x_ (irreducible) el estado en el que había un cliente esperando al que le tocab. Y al aplicar _rl(x)_ que el panadero atienda al que estaba esperando, llegue un cliente y haga el ciclo completo y el cliente que estaba esperando vuelva a coger ticket:
+
+Sea `M' = M - N`
+
+`x = [[< O : Dispenser | next: s(N), last: s(M) > < cliente : BProcess | mode: wait, number: s(N) >]]`.
+
+`rl(x) = [[< O : Dispenser | next: sss(N), last: sss(M) > < cliente : BProcess | mode: wait, number: sss(N) >]]`
+
+`eq(rl(x)) = [[< O : Dispenser | next: s(0), last: s(M') > < cliente : BProcess | mode: wait, number: s(0) >]]`
+
+`eq(x) = [[< O : Dispenser | next: s(0), last: s(M') > < cliente : BProcess | mode: wait, number: s(0) >]]`
+
+`rl(eq(x)) = [[< O : Dispenser | next: sss(0), last: sss(M') > < cliente : BProcess | mode: wait, number: sss(0) >]]`
+
+`eq(rl(eq(x))) = [[< O : Dispenser | next: s(0), last: s(M') > < cliente : BProcess | mode: wait, number: s(0) >]]`
+
+Como podemos ver `eq(rl(x)) = eq(rl(eq(x)))` por lo que _rl_, que es la composición de todas nuestra reglas (un ciclo), es coherente. Por consecuente todas lo son, es decir, nuestro módulo es coherente. 
 
 ### 5 - En el módulo ABSTRACT-BAKERY, ¿es finito el espacio de búsqueda alcanzable a partir de estados definidos con el operador initial?
 
+Sí, el espacio de búsqueda alcanzable **es finito**. Podemos demostrarlo dando una cóta máxima finita. 
 
+Sea N el número de clientes:
+
+El dispensador de tickets (_Dispenser_) puede tener una difernecia entre el número del último ticket asignado y el número de ticket al que le toca el turno de máximo el número de clientes que hay, es decir N posibles estados.
+
+Cada cliente pude tener tres estados: fuera da tienda (_sleep_), esperando con un ticket en la mano (_wait_) ó siendo atendido por el panadero (_crit_) y para _wait_ el número del ticket que tiene en la mano puede tomar tantos valores como clientes hay, es decir N. Por lo que un cliente pude tomar N+2 estados diferentes.
+
+Luego `O(estados(N)) = N * (N+2)^N` que es un número finito. 
 
 ### 6 - Utiliza el comprobador de modelos de Maude para comprobar la exclusión mutua del sistema con 5 procesos.
 
