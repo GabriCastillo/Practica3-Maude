@@ -76,16 +76,28 @@ mod BAKERY-PREDS is
 	protecting ABSTRACT-BAKERY .
 	including SATISFACTION .
 
-	var M : Mode . 
-	var N N' : Nat .
+	var M M' : Mode . 
+	var N N' N'' : Nat .
 	var C : Configuration .
 
 	subsort GBState < State .
 
 	op process-mode : Nat Mode -> Prop .
+	op num-mode : Nat Mode -> Prop .
 
 	eq [[ < N : BProcess | mode: M, number: N' > C ]]
 		|= process-mode(N, M) = true .
+
+	eq [[ < N : BProcess | mode: M, number: N' > C ]]
+		|= num-mode(s(N''), M') = 
+		if M == M' 
+		then [[ C ]] |= num-mode(N'', M') 
+		else [[ C ]] |= num-mode(s(N''), M') fi .
+	eq [[ none ]]
+		|= num-mode(N, M) = 
+		if N == 0
+		then true 
+		else false fi .
 endm 
 
 mod BAKERY-CHECK is 
