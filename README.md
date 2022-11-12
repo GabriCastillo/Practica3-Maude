@@ -106,11 +106,25 @@ Luego `O(estados(N)) = N * (N+2)^N` que es un número finito.
 
 ### 6 - Utiliza el comprobador de modelos de Maude para comprobar la exclusión mutua del sistema con 5 procesos.
 
+Para ello creamos una propiedad _dissaster_ que se satisfaga si hay dos procesos en estado crítico a la vez, de forma que comprobar con el model-checker la exclusión mútua sea tan simple como negar siempre _dissaster_.
 
+```
+Maude> red modelCheck(initial(5), [] ~ dissaster) .
+reduce in BAKERY-CHECK : modelCheck(initial(5), []~ dissaster) .
+rewrites: 8447 in 9ms cpu (10ms real) (848347 rewrites/second)
+result Bool: true
+```
 
 ### 7 - Utiliza el comprobador de modelos de Maude para comprobar si hay estados de bloqueo.
 
+Para comprobar que no hay estados de bloqueo, podemos comprobar que siempre hay un estado siguiente. Para ello podemos usar la expresion `[] (True -> O True)`. 
 
+```
+Maude> red modelCheck(initial(5), [] (True -> O True)) .
+reduce in BAKERY-CHECK : modelCheck(initial(5), [](True -> O True)) .
+rewrites: 19 in 0ms cpu (0ms real) (~ rewrites/second)
+result Bool: true
+```
 
 ## Ejercicio 2: La panadería modificada
 
