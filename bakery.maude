@@ -50,3 +50,19 @@ mod BAKERY is
 	eq init(0) = none .
 	eq init(s(N)) = < N : BProcess | mode: sleep, number: 0 > init(N) .
 endm
+
+mod ABSTRACT-BAKERY is 
+	including BAKERY .
+
+	var M : Mode . 
+	var N N' : Nat .
+	var C : Configuration .
+
+	op simplify : Configuration -> Configuration .
+	eq simplify(none) = none .
+	eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
+		= < N : BProcess | mode: M, number: N' > simplify(C) .
+
+	eq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
+		= [[< O : Dispenser | next: N, last: N' > simplify(C) ]] .
+endm
