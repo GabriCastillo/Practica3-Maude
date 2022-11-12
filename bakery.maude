@@ -4,14 +4,12 @@ mod Bakery is
 	
 	sorts GBState Mode .
 	sorts BProcess Dispenser  .
-	sorts sleep wait crit .
 	subsort BProcess Dispenser < Cid .
 	subsort Nat < Oid .
 	
 	ops sleep wait crit : -> Mode .
 	
 	op [[_]] : Configuration -> GBState .
-	op nil : -> GBState [ctor]  .
 	
 	---- class BProcess | mode: Mode, number: Nat .
 	op BProcess : -> BProcess .
@@ -23,17 +21,30 @@ mod Bakery is
 	op next:_ : Nat -> Attribute [gather (&)] .
 	op last:_ : Nat -> Attribute [gather (&)] .
 	
-	var N M O P : Nat .
+	var N L O P : Nat .
 	var C : Configuration .
 	
-	rl [wating] : [[< 0 : Dispenser | next: N, last: M > < O : BProcess | mode: sleep, number: P > C ]] => [[< 0 : Dispenser | next: N, last: s(M) > < O : BProcess | mode: wait, number: M > C ]] .
-	
-	rl [critic] : [[< 0 : Dispenser | next: N, last: M > < O : BProcess | mode: wait, number: N > C ]] => [[< 0 : Dispenser | next: N, last: M > < O : BProcess | mode: crit, number: N > C ]] .
-	
-	rl [sleeping] : [[< 0 : Dispenser | next: N, last: M > < O : BProcess | mode: crit, number: P > C ]] => [[< 0 : Dispenser | next: s(N), last: M > < O : BProcess | mode: sleep, number: 0 > C ]] .
+	rl [wating] : 
+		[[< 0 : Dispenser | next: N, last: L > 
+		< O : BProcess | mode: sleep, number: P > C ]] 
+		=> 
+		[[< 0 : Dispenser | next: N, last: s(L) > 
+		< O : BProcess | mode: wait, number: L > C ]] .
+	rl [critic] : 
+		[[< 0 : Dispenser | next: N, last: L > 
+		< O : BProcess | mode: wait, number: N > C ]] 
+		=> 
+		[[< 0 : Dispenser | next: N, last: L > 
+		< O : BProcess | mode: crit, number: N > C ]] .
+	rl [sleeping] : 
+		[[< 0 : Dispenser | next: N, last: L > 
+		< O : BProcess | mode: crit, number: P > C ]] 
+		=> 
+		[[< 0 : Dispenser | next: s(N), last: L > 
+		< O : BProcess | mode: sleep, number: 0 > C ]] .
 
 	op initial : Nat -> GBState .
-	eq initial(N) = [[ < 0 : Dispenser | next: 1, last: 1 > init(N)]] .
+	eq initial(N) = [[< 0 : Dispenser | next: 1, last: 1 > init(N)]] .
 	
 	op init : Nat -> Configuration .
 	eq init(0) = none .
