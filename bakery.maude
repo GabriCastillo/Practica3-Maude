@@ -1,3 +1,5 @@
+load model-checker.maude
+
 mod BAKERY is
 	protecting NAT .
 	including CONFIGURATION .
@@ -69,3 +71,25 @@ mod ABSTRACT-BAKERY is
 	eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
 		= < N : BProcess | mode: M, number: N' > simplify(C) .
 endm
+
+mod BAKERY-PREDS is 
+	protecting ABSTRACT-BAKERY .
+	including SATISFACTION .
+
+	var M : Mode . 
+	var N N' : Nat .
+	var C : Configuration .
+
+	subsort GBState < State .
+
+	op process-mode : Nat Mode -> Prop .
+
+	eq [[ < N : BProcess | mode: M, number: N' > C ]]
+		|= process-mode(N, M) = true .
+endm 
+
+mod BAKERY-CHECK is 
+	protecting BAKERY-PREDS .
+    including MODEL-CHECKER .
+    including LTL-SIMPLIFIER .
+endm	 
