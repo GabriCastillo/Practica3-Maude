@@ -58,11 +58,14 @@ mod ABSTRACT-BAKERY is
 	var N N' : Nat .
 	var C : Configuration .
 
+	ceq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
+		= [[< O : Dispenser | next: N, last: N' > simplify(C) ]] 
+		if N =/= 0 and N' =/= 0 .
+
 	op simplify : Configuration -> Configuration .
 	eq simplify(none) = none .
+	eq simplify(< N : BProcess | mode: M, number: 0 > C) 
+		= < N : BProcess | mode: M, number: 0 > simplify(C) .
 	eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
 		= < N : BProcess | mode: M, number: N' > simplify(C) .
-
-	eq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
-		= [[< O : Dispenser | next: N, last: N' > simplify(C) ]] .
 endm
