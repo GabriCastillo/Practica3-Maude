@@ -23,7 +23,7 @@ mod BAKERY is
 	op next:_ : Nat -> Attribute [gather (&)] .
 	op last:_ : Nat -> Attribute [gather (&)] .
 	
-	var N N' M M' : Nat .
+	vars N N' M M' : Nat .
 	var C : Configuration .
 	
 	rl [to_wait] : 

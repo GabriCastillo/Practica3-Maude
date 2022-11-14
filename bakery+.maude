@@ -1,0 +1,29 @@
+load bakery.maude
+
+mod BAKERY+ is
+	including BAKERY .
+	protecting BOOL .
+
+	vars N M T : Nat .
+	var S : Mode .
+	var C : Configuration .
+	
+	op droppedTicket : Configuration Nat -> Bool .
+
+	eq droppedTicket(none, T) = true .
+	eq droppedTicket(< O : Dispenser | next: N, last: M > C, T) 
+		= droppedTicket(C, T) .
+	eq droppedTicket(< N : BProcess | mode: S, number: M > C, T) 
+	= if M == T then false else droppedTicket(C, T) fi .
+
+	crl [drop_ticket] : 
+		[[ < N : BProcess | mode: wait, number: M > C ]] 
+		=> 
+		[[ < N : BProcess | mode: sleep, number: 0 > C ]] 
+		if M =/= 0 .
+	crl [next_ticket] : 
+		[[ < O : Dispenser | next: N, last: M > C ]] 
+		=> 
+		[[ < O : Dispenser | next: s(N), last: M > C ]] 
+		if droppedTicket(C, N) . 
+endm
