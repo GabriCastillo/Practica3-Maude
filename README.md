@@ -130,10 +130,25 @@ result Bool: true
 
 ### 8 - Analiza la confluencia, terminación y coherencia del sistema definido.
 
+**Es confluente**, pese a que nuestro modulo bakery+ cuenta con una nueva operacion, esta solo es llamada por el conjunto de reglas. Respeco al input, seguimos teniendo solo una posibilidad de hacer matching, lo que implica que este sistema tambien es confluente, al no haber ningun camino de reduccion posible que lo haga no confluente.
 
+
+**No es terminante,** una vez mas, debido a que el programa es incapaz de alcanzar un estado de bloqueo gracias a la exclusion mutua entre los procesos. Tal como se muestra a continuacion:
+
+```
+Maude> load bakery+.maude
+Maude> rew initial(5) .
+rewrite in BAKERY+ : initial(5) .
+Debug(1)> q
+Bye.
+```
+Como la ejecucoion no termina, entonces es no terminante.
+
+**Es coherente**, ya que una vez creado el estado inicial, todos los estados se encuentran en forma irreducible. Por lo que no se intercalan pasos de rescriturar con reducción, y por tanto no puede ser no-coherente.
 
 ### 9 - ¿Es finito el espacio de búsqueda alcanzable a partir de estados definidos con el operador initial? Utiliza el comando search para comprobar la exclusión mutua del sistema con 5 procesos.
 
+<<<<<<< HEAD
 No, **no es finito** puesto que si un cliente coge un ticket y lo suelta seguidamente, lo que generamos es el mismo estado con _last_ incrementado en 1. Este proceso pude repetirse infinitamente, dando como resultado un infinito número de estados equivalentes con last diferentes.
 
 Si el espacio de búqueda fuese finito, el comando _search_ siempre terminaría. En cambio el siguiente comando no termina:
@@ -149,9 +164,13 @@ Bye.
 Comprobamos la exclusión mútua para 5 procesos:
 
 ```
-COMPLETAR
+Maude> load bakery+.maude
+Maude> rew initial(5) .
+Maude> search [1] initial(5) =>* [[C < O : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .
+Debug(1)> q
+Bye.
 ```
-
+Como se puede observar, no es posible encontrar un contraejemplo, ya que el espacio de busqueda es infinito.
 
 ### 10 - La abstracción proporcionada por el módulo ABSTRACT-BAKERY no es suficiente para este sistema modificado, ¿por qué? Especifica una abstracción válida para este nuevo sistema en una módulo ABSTRACT-BAKERY+.
 
