@@ -1,7 +1,7 @@
 load bakery.maude
 
 mod BAKERY+ is
-	including BAKERY .
+	including ABSTRACT-BAKERY .
 	protecting BOOL .
 
 	vars N M T : Nat .
@@ -11,10 +11,12 @@ mod BAKERY+ is
 	op droppedTicket : Configuration Nat -> Bool .
 
 	eq droppedTicket(none, T) = true .
-	eq droppedTicket(< O : Dispenser | next: N, last: M > C, T) 
-		= droppedTicket(C, T) .
-	eq droppedTicket(< N : BProcess | mode: S, number: M > C, T) 
-	= if M == T then false else droppedTicket(C, T) fi .
+	ceq droppedTicket(< O : Dispenser | next: N, last: M > C, T) 
+		= droppedTicket(C, T) 
+		if C =/= none .
+	ceq droppedTicket(< N : BProcess | mode: S, number: M > C, T) 
+	= if M == T then false else droppedTicket(C, T) fi 
+	if C =/= none .
 
 	crl [drop_ticket] : 
 		[[ < N : BProcess | mode: wait, number: M > C ]] 
@@ -26,4 +28,55 @@ mod BAKERY+ is
 		=> 
 		[[ < O : Dispenser | next: s(N), last: M > C ]] 
 		if droppedTicket(C, N) . 
+endm
+
+mod ABSTRACT-BAKERY+ is 
+	including NAT .
+	including BAKERY+ .
+
+	var M : Mode . 
+	var N N' X : Nat .
+	var C C': Configuration .
+
+	op inf : -> Nat .
+	
+	eq min(N, inf) = N [assoc comm] .
+
+	op min_ticket : Configuration -> Nat .
+	eq min_ticket(none) = inf .
+	eq min_ticket(< O : Dispenser | next: N, last: N' >) = inf .
+	eq min_ticket(< N : BProcess | mode: M, number: N' >) = 
+		if N' > 0 then N' else inf  .
+	ceq min_ticket(C C') = min(min_ticket(C), min_ticket(C')) 
+		if C =/= none /\ C' =/= none .
+
+	op max_ticket : Configuration -> Nat .
+	eq max_ticket(none) = 0 .
+	eq max_ticket(< O : Dispenser | next: N, last: N' >) = 0 .
+	eq max_ticket(< N : BProcess | mode: M, number: N' >) = N' .
+	ceq max_ticket(C C') = mex(max_ticket(C), max_ticket(C')) 
+		if C =/= none /\ C' =/= none .
+
+	op collapse : Configuration Nat Nat -> Configuration .
+	eq collapse(none, N, N') = none .
+	ceq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
+		= < X : BProcess | mode: M, number: N' > 
+		collapse(C, min_ticket(C), s(N')) 
+		if C =/= none .
+
+	op num_wating : Configuration -> Nat .
+	eq num_wating(none) = 0 .
+	eq num_wating(< X : BProcess | mode: wait, number: N >) = 1 .
+	eq num_wating(< O : Dispenser | next: N, last: N' >) = 0 .
+	ceq num_wating(< X : BProcess | mode: M, number: N >) = 0 
+		if M =/= wait .
+	ceq num_wating(C C') = num_wating(C) + num_wating(C') 
+		if C =/= none /\ C' =/= none .
+
+	ceq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
+		= [[< O : Dispenser | next: min, last: N' > simplify(C) ]] 
+		if N =/= 0 and N' =/= 0 
+		/\ max_ticket(C) > 1
+		/\ max_ticket(C) - min_ticket(C) + 1 > num_wating(C) 
+		/\ C' := collapse(C, min_ticket(C), 1) .
 endm

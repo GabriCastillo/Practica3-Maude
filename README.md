@@ -134,11 +134,28 @@ result Bool: true
 
 ### 9 - ¿Es finito el espacio de búsqueda alcanzable a partir de estados definidos con el operador initial? Utiliza el comando search para comprobar la exclusión mutua del sistema con 5 procesos.
 
+No, **no es finito** puesto que si un cliente coge un ticket y lo suelta seguidamente, lo que generamos es el mismo estado con _last_ incrementado en 1. Este proceso pude repetirse infinitamente, dando como resultado un infinito número de estados equivalentes con last diferentes.
+
+Si el espacio de búqueda fuese finito, el comando _search_ siempre terminaría. En cambio el siguiente comando no termina:
+
+```
+Maude> load bakery+.maude 
+Maude> search initial(3) =>! S:GBState .
+search in BAKERY+ : initial(3) =>! S:GBState .
+Debug(1)> q
+Bye.
+```
+
+Comprobamos la exclusión mútua para 5 procesos:
+
+```
+COMPLETAR
+```
 
 
 ### 10 - La abstracción proporcionada por el módulo ABSTRACT-BAKERY no es suficiente para este sistema modificado, ¿por qué? Especifica una abstracción válida para este nuevo sistema en una módulo ABSTRACT-BAKERY+.
 
-
+Por que a pesar de que el el intervalor `[N + next, N + last]` pase a `[0, last - next]`, ya el `last - next` no tiene como cota máxima el número de clientes en la panadería. Ya que un cliente al coger y soltar el ticket incrementa en 1 la diferencia `last - next`, y esto puede hacerse infinitamente. 
 
 ### 11 - Utiliza la abstracción anterior para comprobar la no existencia de bloqueos y la exclusión mutua
 

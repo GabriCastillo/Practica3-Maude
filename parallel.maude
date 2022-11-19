@@ -1,0 +1,118 @@
+---- PARALLEL: A simple parallel language and its rewriting logic semantics.
+
+---- Memory model with locations named by Qids holding Ints.
+
+fmod MEMORY is
+    protecting INT .
+    protecting QID .
+    sorts Memory Bool? .
+    subsorts Bool < Bool? .
+    op none : -> Memory .
+    op __ : Memory Memory -> Memory [assoc comm id: none] .
+    op [_,_] : Qid Int -> Memory .
+    op _in_ : Qid Memory -> Bool? . ---- cell allocated for Q?
+    var Q : Qid . 
+    var M : Memory . 
+    var N : Int .
+    eq Q in [Q, N] M = true . ---- incomplete, only positive cases
+endfm
+
+---- Test comparing the contents of a named memory location to an integer. 
+---- By default, value of non-allocated Qid is 0.
+
+fmod TESTS is
+    inc MEMORY .
+    sort Test .
+    op _=_ : Qid Int -> Test .
+    op _>’_ : Qid Int -> Test .
+    op _&_ : Test Test -> Test [assoc] .
+    op eval : Test Memory -> Bool .
+    var Q : Qid . 
+    var M : Memory .
+    var N N’ K : Int . 
+    vars T T’ : Test .
+    eq eval(Q = N, [Q, N’] M) = N == N’ .
+   ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
+    eq eval(Q >’ N, [Q, K] M) = K > N .
+   ceq eval(Q >’ N, M) = 0 > N if Q in M =/= true .
+    eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
+endfm
+
+---- Syntax for arithmetic expressions, and their evaluation semantics.
+---- To avoid evaluation of expressions by themselves, the operators
+---- + and * are specified as constructors with syntax +’ and *’ 
+fmod EXPRESSION is
+    inc MEMORY . 
+    sort Expression .
+    subsorts Qid Int < Expression .
+    op _+’_ : Expression Expression -> Expression [ctor] .
+    op _*’_ : Expression Expression -> Expression [ctor] .
+    op _-’_ : Expression Expression -> Expression [ctor] .
+    op eval : Expression Memory -> Int .
+    var Q : Qid . 
+    var M : Memory . 
+    vars N N’ : Int . 
+    vars E E’ : Expression .
+    eq eval(N, M) = N .
+    eq eval(Q, [Q, N] M) = N . 
+   ceq eval(Q,M) = 0 if Q in M =/= true .
+    eq eval(E +’ E’, M) = eval(E, M) + eval(E’, M) .
+    eq eval(E *’ E’, M) = eval(E, M) * eval(E’, M) .
+    eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
+endfm
+
+---- Syntax for a trival sequential programming language. 
+---- We allow abstracting out program fragments as elements of sorts LoopingUserStatement and UserStatement. 
+---- LoopingUserStatements abstract out potentially nonterminating program fragments. 
+---- UserStatements which are not LoopingUserStatements abstract out terminating program fragments.
+
+fmod SEQUENTIAL is
+    inc TESTS .
+    inc EXPRESSION .
+    sorts UserStatement LoopingUserStatement Program .
+    subsort LoopingUserStatement < UserStatement < Program .
+    op skip : -> Program .
+    op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
+    op _:=_ : Qid Expression -> Program .
+    op if_then_fi : Test Program -> Program .
+    op while_do_od : Test Program -> Program .
+    op repeat_forever : Program -> Program .
+endfm
+
+mod PARALLEL is
+    inc SEQUENTIAL .
+    inc TESTS .
+    sorts Pid Process Soup MachineState .
+    subsort Process < Soup .
+    subsort Int < Pid .
+    op [_,_] : Pid Program -> Process .
+    op empty : -> Soup .
+    op _|_ : Soup Soup -> Soup [prec 61 assoc comm id: empty] .
+    op {_,_} : Soup Memory -> MachineState .
+    vars P R : Program . 
+    var  S : Soup .
+    var  U : UserStatement . 
+    var  L : LoopingUserStatement .
+    vars I J : Pid . 
+    var  M : Memory .
+    var  Q : Qid . 
+    vars N X : Int .
+    var  T : Test . 
+    var  E : Expression .
+    rl {[I, L ; R] | S, M} => {[I, L ; R] | S, M} .
+    rl {[I, U ; R] | S, M} => {[I, R] | S, M} .
+    rl {[I, (Q := E) ; R] | S, [Q, X] M} 
+      => {[I, R] | S, [Q, eval(E, [Q, X] M)] M} .
+   crl {[I, (Q := E) ; R] | S, M} 
+      => {[I, R] | S, [Q, eval(E, M)] M} 
+      if Q in M =/= true .
+    rl {[I, if T then P fi ; R] | S, M} 
+      => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
+    rl {[I, while T do P od ; R] | S, M} 
+      => {[I, if eval(T, M) 
+              then (P ; while T do P od) 
+              else skip 
+              fi ; R] | S, M} .
+    rl {[I, repeat P forever ; R] | S, M} 
+      => {[I, P ; repeat P forever ; R] | S, M} .
+endm

@@ -68,8 +68,9 @@ mod ABSTRACT-BAKERY is
 	eq simplify(none) = none .
 	eq simplify(< N : BProcess | mode: M, number: 0 > C) 
 		= < N : BProcess | mode: M, number: 0 > simplify(C) .
-	eq simplify(< N : BProcess | mode: M, number: s(N') > C) 
-		= < N : BProcess | mode: M, number: N' > simplify(C) .
+	ceq simplify(< N : BProcess | mode: M, number: s(N') > C) 
+		= < N : BProcess | mode: M, number: N' > simplify(C) 
+		if N' =/= 0.
 endm
 
 mod BAKERY-PREDS is 
