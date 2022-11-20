@@ -9,10 +9,6 @@ mod BAKERY is
 	subsort BProcess Dispenser < Cid .
 	subsort Nat < Oid .
 	
-	vars N N' M M' : Nat .
-	vars C C' : Configuration .
-	var S : Mode .
-
 	ops sleep wait crit : -> Mode .
 	op O : -> Oid .
 	op [[_]] : Configuration -> GBState .
@@ -25,7 +21,10 @@ mod BAKERY is
 	---- class Dispenser | next: Nat, last: Nat .
 	op Dispenser : -> Dispenser .
 	op next:_ : Nat -> Attribute [gather (&)] .
-	op last:_ : Nat -> Attribute [gather (&)] .	
+	op last:_ : Nat -> Attribute [gather (&)] .
+	
+	vars N N' M M' : Nat .
+	var C : Configuration .
 	
 	rl [to_wait] : 
 		[[< O : Dispenser | next: N, last: M > 
@@ -38,10 +37,10 @@ mod BAKERY is
 		< N' : BProcess | mode: wait, number: N > C ]] 
 		=> 
 		[[< O : Dispenser | next: N, last: M > 
-		< N' : BProcess | mode: crit, number: N > C ]] .
+		< N' : BProcess | mode: crit, number: 0 > C ]] .
 	rl [to_sleep] : 
 		[[< O : Dispenser | next: N, last: M > 
-		< N' : BProcess | mode: crit, number: N > C ]] 
+		< N' : BProcess | mode: crit, number: 0 > C ]] 
 		=> 
 		[[< O : Dispenser | next: s(N), last: M > 
 		< N' : BProcess | mode: sleep, number: 0 > C ]] .

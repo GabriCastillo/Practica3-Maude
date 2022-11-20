@@ -180,7 +180,7 @@ Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - ne
 Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
 
 ```
-Maude> search initial(5) =>! S:GBState .
+Maude> search initial(3) =>! S:GBState .
 search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
 
 No solution.
