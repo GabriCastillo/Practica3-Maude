@@ -41,31 +41,35 @@ mod ABSTRACT-BAKERY+ is
 
 	op inf : -> Nat [ctor] .
 	
-	op minf : Nat Nat -> Nat [comm assoc ] .
+	op minf : Nat Nat -> Nat [comm assoc] .
 	eq minf(N, inf) = N .
-	ceq minf(N,N') = min(N,N') if N =/= inf /\ N' =/= inf .
+	eq minf(N,N') = min(N,N') .
 
 	op minTicket : Configuration -> Nat .
 	eq minTicket(none) = inf .
 	eq minTicket(< O : Dispenser | next: N, last: N' >) = inf .
 	eq minTicket(< N : BProcess | mode: M, number: 0 >) = inf .
-	ceq minTicket(< N : BProcess | mode: M, number: N' >) = N' if N' > 0  .
-	ceq minTicket(C C') = minf(minTicket(C), minTicket(C')) if C =/= none /\ C' =/= none .
+	ceq minTicket(< N : BProcess | mode: M, number: N' >) = N' 
+		if N' > 0  .
+	ceq minTicket(C C') = minf(minTicket(C), minTicket(C')) 
+		if C =/= none /\ C' =/= none .
 
 	op maxTicket : Configuration -> Nat .
 	eq maxTicket(none) = 0 .
 	eq maxTicket(< O : Dispenser | next: N, last: N' >) = 0 .
 	eq maxTicket(< N : BProcess | mode: M, number: N' >) = N' .
-	ceq maxTicket(C C') = max(maxTicket(C), maxTicket(C')) if C =/= none /\ C' =/= none .
+	ceq maxTicket(C C') = max(maxTicket(C), maxTicket(C')) 
+		if C =/= none /\ C' =/= none .
 
 	op collapse : Configuration Nat Nat -> Configuration .
 	eq collapse(none, N, N') = none .
+	eq collapse(< X : BProcess | mode: M, number: 0 > C, N, N') 
+		= < X : BProcess | mode: M, number: 0 >
+		collapse(C, minTicket(C), N') .
 	ceq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
 		= < X : BProcess | mode: M, number: N' > 
-		collapse(C, minTicket(C), s(N')) if N > 0 .
-	ceq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
-		= < X : BProcess | mode: M, number: N >
-		collapse(C, minTicket(C), s(N')) if N = 0 .
+		collapse(C, minTicket(C), s(N')) 
+		if N > 0 .
 
 	op numTickets : Configuration -> Nat .
 	eq numTickets(none) = 0 .
@@ -80,5 +84,6 @@ mod ABSTRACT-BAKERY+ is
 		= [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > collapse(C, minTicket(C), 1 ) ]] 
 		if minTicket(C) =/= inf
 		/\ C' := collapse(C, minTicket(C), 1)
-		/\ ((maxTicket(C) - minTicket(C)) + 1 > numTickets(C) or minTicket(C) > 1)  .
+		/\ ((maxTicket(C) - minTicket(C)) + 1 > numTickets(C) 
+			or minTicket(C) > 1) .
 endm

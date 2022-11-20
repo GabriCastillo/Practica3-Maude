@@ -180,14 +180,14 @@ Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - ne
 Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
 
 ```
-Maude> load bakery+.maude 
-Maude> search [1] initial(5) =>! S:GBState . 
-search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
-Debug(1)> q
-Bye.
+Maude> search initial(3) =>! S:GBState .
+search in ABSTRACT-BAKERY+ : initial(3) =>! S:GBState .
+
+No solution.
+states: 384  rewrites: 127490 in 112ms cpu (121ms real) (1130591 rewrites/second)
 ```
 
-Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos deberia mostrar una configuracion GBState (que puede ser cualquiera, ya que no hemos sugerido ningun filtro) la cual sea a su vez un estado final.
+Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos debería mostrar una configuracion de bloqueo, pero no hay soluciones, por lo que no hay estados de bloqueo.
 
 Comprobamos la exclusión mútua para 5 procesos:
 
