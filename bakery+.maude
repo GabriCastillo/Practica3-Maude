@@ -1,7 +1,7 @@
 load bakery.maude
 
 mod BAKERY+ is
-	including ABSTRACT-BAKERY .
+	including BAKERY .
 	protecting BOOL .
 
 	vars N M T : Nat .
@@ -76,7 +76,7 @@ mod ABSTRACT-BAKERY+ is
 		if C =/= none /\ C' =/= none .
 
 	ceq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
-		= [[< O : Dispenser | next: (min_ticket(C)), last: N' > simplify(C) ]] 
+		= [[< O : Dispenser | next: (min_ticket(C)), last: N' > collapse(C, min_ticket(C), 1 ) ]] 
 		if N =/= 0 and N' =/= 0 
 		/\ max_ticket(C) > 1
 		/\ (max_ticket(C) - min_ticket(C)) + 1 > num_wating(C) 
