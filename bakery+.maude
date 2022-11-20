@@ -41,43 +41,49 @@ mod ABSTRACT-BAKERY+ is
 
 	op inf : -> Nat [ctor] .
 	
-	op minf : Nat Nat -> Nat .
+	op minf : Nat Nat -> Nat [comm assoc] .
 	eq minf(N, inf) = N .
 	eq minf(N,N') = min(N,N') .
 
-	op min_ticket : Configuration -> Nat .
-	eq min_ticket(none) = inf .
-	eq min_ticket(< O : Dispenser | next: N, last: N' >) = inf .
-	eq min_ticket(< N : BProcess | mode: M, number: 0 >) = inf .
-	ceq min_ticket(< N : BProcess | mode: M, number: N' >) = N' if N' > 0  .
-	ceq min_ticket(C C') = minf(min_ticket(C), min_ticket(C')) if C =/= none /\ C' =/= none .
+	op minTicket : Configuration -> Nat .
+	eq minTicket(none) = inf .
+	eq minTicket(< O : Dispenser | next: N, last: N' >) = inf .
+	eq minTicket(< N : BProcess | mode: M, number: 0 >) = inf .
+	ceq minTicket(< N : BProcess | mode: M, number: N' >) = N' 
+		if N' > 0  .
+	ceq minTicket(C C') = minf(minTicket(C), minTicket(C')) 
+		if C =/= none /\ C' =/= none .
 
-	op max_ticket : Configuration -> Nat .
-	eq max_ticket(none) = 0 .
-	eq max_ticket(< O : Dispenser | next: N, last: N' >) = 0 .
-	eq max_ticket(< N : BProcess | mode: M, number: N' >) = N' .
-	ceq max_ticket(C C') = max(max_ticket(C), max_ticket(C')) 
+	op maxTicket : Configuration -> Nat .
+	eq maxTicket(none) = 0 .
+	eq maxTicket(< O : Dispenser | next: N, last: N' >) = 0 .
+	eq maxTicket(< N : BProcess | mode: M, number: N' >) = N' .
+	ceq maxTicket(C C') = max(maxTicket(C), maxTicket(C')) 
 		if C =/= none /\ C' =/= none .
 
 	op collapse : Configuration Nat Nat -> Configuration .
 	eq collapse(none, N, N') = none .
-	eq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
+	eq collapse(< X : BProcess | mode: M, number: 0 > C, N, N') 
+		= < X : BProcess | mode: M, number: 0 >
+		collapse(C, minTicket(C), N') .
+	ceq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
 		= < X : BProcess | mode: M, number: N' > 
-		collapse(C, min_ticket(C), s(N')) .
+		collapse(C, minTicket(C), s(N')) 
+		if N > 0 .
 
-	op num_tickets : Configuration -> Nat .
-	eq num_tickets(none) = 0 .
-	eq num_tickets(< X : BProcess | mode: wait, number: N >) = 1 .
-	eq num_tickets(< O : Dispenser | next: N, last: N' >) = 0 .
-	ceq num_tickets(< X : BProcess | mode: M, number: N >) = 0 
+	op numTickets : Configuration -> Nat .
+	eq numTickets(none) = 0 .
+	eq numTickets(< X : BProcess | mode: wait, number: N >) = 1 .
+	eq numTickets(< O : Dispenser | next: N, last: N' >) = 0 .
+	ceq numTickets(< X : BProcess | mode: M, number: N >) = 0 
 		if M =/= wait .
-	ceq num_tickets(C C') = num_tickets(C) + num_tickets(C') 
+	ceq numTickets(C C') = numTickets(C) + numTickets(C') 
 		if C =/= none /\ C' =/= none .
 
 	ceq [[< O : Dispenser | next: N, last: N' > C ]]
-		= [[< O : Dispenser | next: min_ticket(C'), last: max_ticket(C') > collapse(C, min_ticket(C), 1 ) ]] 
-		if min_ticket(C) =/= inf
-		/\ C' := collapse(C, min_ticket(C), 1)
-		/\ ((max_ticket(C) - min_ticket(C)) + 1 > num_tickets(C) 
-			or min_ticket(C) > 1) .
+		= [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > collapse(C, minTicket(C), 1 ) ]] 
+		if minTicket(C) =/= inf
+		/\ C' := collapse(C, minTicket(C), 1)
+		/\ ((maxTicket(C) - minTicket(C)) + 1 > numTickets(C) 
+			or minTicket(C) > 1) .
 endm
