@@ -180,11 +180,11 @@ Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - ne
 Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
 
 ```
-Maude> search initial(3) =>! S:GBState .
-search in ABSTRACT-BAKERY+ : initial(3) =>! S:GBState .
+Maude> search initial(5) =>! S:GBState .
+search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
 
 No solution.
-states: 384  rewrites: 127490 in 112ms cpu (121ms real) (1130591 rewrites/second)
+states: 12530  rewrites: 20363637 in 7504ms cpu (7558ms real) (2713392 rewrites/second)
 ```
 
 Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos debería mostrar una configuracion de bloqueo, pero no hay soluciones, por lo que no hay estados de bloqueo.
@@ -192,13 +192,15 @@ Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos debería mo
 Comprobamos la exclusión mútua para 5 procesos:
 
 ```
-Maude> load bakery+.maude
-Maude> search [1] initial(5) =>* [[C < O : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .
-Debug(1)> q
-Bye.
-```
-Como se puede observar, no es posible encontrar un contraejemplo, ya que el espacio de busqueda es infinito.
+Maude> search [1] initial(5) =>* [[C < N:Nat : BProcess | mode: crit, number: M:Nat > < N':Nat : BProcess | mode: crit,number: M':Nat >]] such that N:Nat =/= N':Nat .
+search [1] in ABSTRACT-BAKERY+ : initial(5) =>* [[C < N : BProcess | mode: crit,number: M:Nat > < N' : BProcess | mode: crit,number:
+    M':Nat >]] such that N =/= N' = true .
 
+No solution.
+states: 12530  rewrites: 20363637 in 9293ms cpu (9352ms real) (2191187 rewrites/second)
+```
+
+Como se puede observar, no se encuentra ningún contraejemplo.
 
 ## Ejercicio 3: El lenguaje PARALLEL++
 

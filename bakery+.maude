@@ -48,17 +48,37 @@ mod ABSTRACT-BAKERY+ is
 	op minTicket : Configuration -> Nat .
 	eq minTicket(none) = inf .
 	eq minTicket(< O : Dispenser | next: N, last: N' >) = inf .
-	eq minTicket(< N : BProcess | mode: M, number: 0 >) = inf .
-	ceq minTicket(< N : BProcess | mode: M, number: N' >) = N' 
-		if N' > 0  .
+	eq minTicket(< N : BProcess | mode: wait, number: N' >) = N' .
+	ceq minTicket(< N : BProcess | mode: M, number: N' >) = inf 
+		if M =/= wait  .
 	ceq minTicket(C C') = minf(minTicket(C), minTicket(C')) 
 		if C =/= none /\ C' =/= none .
 
 	op maxTicket : Configuration -> Nat .
 	eq maxTicket(none) = 0 .
 	eq maxTicket(< O : Dispenser | next: N, last: N' >) = 0 .
-	eq maxTicket(< N : BProcess | mode: M, number: N' >) = N' .
+	eq maxTicket(< N : BProcess | mode: wait, number: N' >) = N' .
+	ceq maxTicket(< N : BProcess | mode: M, number: N' >) = 0 
+		if M =/= wait .
 	ceq maxTicket(C C') = max(maxTicket(C), maxTicket(C')) 
+		if C =/= none /\ C' =/= none .
+
+	op numTickets : Configuration -> Nat .
+	eq numTickets(none) = 0 .
+	eq numTickets(< X : BProcess | mode: wait, number: N >) = 1 .
+	eq numTickets(< O : Dispenser | next: N, last: N' >) = 0 .
+	ceq numTickets(< X : BProcess | mode: M, number: N >) = 0 
+		if M =/= wait .
+	ceq numTickets(C C') = numTickets(C) + numTickets(C') 
+		if C =/= none /\ C' =/= none .
+
+	op isCrit : Configuration -> Bool .
+	eq isCrit(none) = true .
+	eq isCrit(< O : Dispenser | next: N, last: N' >) = true .
+	eq isCrit(< X : BProcess | mode: crit, number: N >) = false .
+	ceq isCrit(< X : BProcess | mode: M, number: N >) = true 
+		if M =/= crit .
+	ceq isCrit(C C') = isCrit(C) and isCrit(C')
 		if C =/= none /\ C' =/= none .
 
 	op collapse : Configuration Nat Nat -> Configuration .
@@ -71,17 +91,11 @@ mod ABSTRACT-BAKERY+ is
 		collapse(C, minTicket(C), s(N')) 
 		if N > 0 .
 
-	op numTickets : Configuration -> Nat .
-	eq numTickets(none) = 0 .
-	eq numTickets(< X : BProcess | mode: wait, number: N >) = 1 .
-	eq numTickets(< O : Dispenser | next: N, last: N' >) = 0 .
-	ceq numTickets(< X : BProcess | mode: M, number: N >) = 0 
-		if M =/= wait .
-	ceq numTickets(C C') = numTickets(C) + numTickets(C') 
-		if C =/= none /\ C' =/= none .
-
 	ceq [[< O : Dispenser | next: N, last: N' > C ]]
-		= [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > collapse(C, minTicket(C), 1 ) ]] 
+		= if isCrit(C) 
+		then [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > collapse(C, minTicket(C), 2 ) ]]
+		else [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > collapse(C, minTicket(C), 1 ) ]]
+		fi
 		if minTicket(C) =/= inf
 		/\ C' := collapse(C, minTicket(C), 1)
 		/\ ((maxTicket(C) - minTicket(C)) + 1 > numTickets(C) 
