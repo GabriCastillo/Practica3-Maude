@@ -25,17 +25,7 @@ mod BAKERY is
 	---- class Dispenser | next: Nat, last: Nat .
 	op Dispenser : -> Dispenser .
 	op next:_ : Nat -> Attribute [gather (&)] .
-	op last:_ : Nat -> Attribute [gather (&)] .
-
-	op noCrit : Configuration -> Bool .
-	eq noCrit(none) = true .
-	eq noCrit(< O : Dispenser | next: N, last: M >) = true .
-	eq noCrit(< N : BProcess | mode: crit, number: M >) = false .
-	ceq noCrit(< N : BProcess | mode: S, number: M >) = true 
-		if S =/= crit .
-	ceq noCrit(C C') = noCrit(C) and noCrit(C')
-		if C =/= none /\ C' =/= none .
-	
+	op last:_ : Nat -> Attribute [gather (&)] .	
 	
 	rl [to_wait] : 
 		[[< O : Dispenser | next: N, last: M > 
@@ -43,16 +33,15 @@ mod BAKERY is
 		=> 
 		[[< O : Dispenser | next: N, last: s(M) > 
 		< N' : BProcess | mode: wait, number: M > C ]] .
-	crl [to_crit] : 
+	rl [to_crit] : 
 		[[< O : Dispenser | next: N, last: M > 
 		< N' : BProcess | mode: wait, number: N > C ]] 
 		=> 
 		[[< O : Dispenser | next: N, last: M > 
-		< N' : BProcess | mode: crit, number: 0 > C ]] 
-		if noCrit(C) .
+		< N' : BProcess | mode: crit, number: N > C ]] .
 	rl [to_sleep] : 
 		[[< O : Dispenser | next: N, last: M > 
-		< N' : BProcess | mode: crit, number: 0 > C ]] 
+		< N' : BProcess | mode: crit, number: N > C ]] 
 		=> 
 		[[< O : Dispenser | next: s(N), last: M > 
 		< N' : BProcess | mode: sleep, number: 0 > C ]] .
