@@ -70,7 +70,7 @@ mod ABSTRACT-BAKERY is
 		= < N : BProcess | mode: M, number: 0 > simplify(C) .
 	ceq simplify(< N : BProcess | mode: M, number: s(N') > C) 
 		= < N : BProcess | mode: M, number: N' > simplify(C) 
-		if N' =/= 0.
+		if N' =/= 0 .
 endm
 
 mod BAKERY-PREDS is 

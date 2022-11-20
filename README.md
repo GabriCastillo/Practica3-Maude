@@ -174,7 +174,7 @@ Como se puede observar, no es posible encontrar un contraejemplo, ya que el espa
 
 ### 10 - La abstracción proporcionada por el módulo ABSTRACT-BAKERY no es suficiente para este sistema modificado, ¿por qué? Especifica una abstracción válida para este nuevo sistema en una módulo ABSTRACT-BAKERY+.
 
-Por que a pesar de que el el intervalor `[N + next, N + last]` pase a `[0, last - next]`, ya el `last - next` no tiene como cota máxima el número de clientes en la panadería. Ya que un cliente al coger y soltar el ticket incrementa en 1 la diferencia `last - next`, y esto puede hacerse infinitamente. 
+Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - next]`, ya el `last - next` no tiene como cota máxima el número de clientes en la panadería. Ya que un cliente al coger y soltar el ticket incrementa en 1 la diferencia `last - next`, y esto puede hacerse infinitamente. 
 
 ### 11 - Utiliza la abstracción anterior para comprobar la no existencia de bloqueos y la exclusión mutua
 

@@ -32,29 +32,31 @@ endm
 
 mod ABSTRACT-BAKERY+ is 
 	including NAT .
+	including INT .
 	including BAKERY+ .
 
 	var M : Mode . 
-	var N N' X : Nat .
-	var C C': Configuration .
+	vars N N' X : Nat .
+	vars C C' : Configuration .
 
-	op inf : -> Nat .
+	op inf : -> Nat [ctor] .
 	
-	eq min(N, inf) = N [assoc comm] .
+	op minn : Nat Nat -> Nat .
+	eq minn(N, inf) = N .
+	eq minn(N,N') = min(N,N') .
 
 	op min_ticket : Configuration -> Nat .
 	eq min_ticket(none) = inf .
 	eq min_ticket(< O : Dispenser | next: N, last: N' >) = inf .
-	eq min_ticket(< N : BProcess | mode: M, number: N' >) = 
-		if N' > 0 then N' else inf  .
-	ceq min_ticket(C C') = min(min_ticket(C), min_ticket(C')) 
-		if C =/= none /\ C' =/= none .
+	ceq min_ticket(< N : BProcess | mode: M, number: N' >) = N' if N' > 0  .
+	ceq min_ticket(< N : BProcess | mode: M, number: N' >) = inf if N' <= 0  .
+	ceq min_ticket(C C') = minn(min_ticket(C), min_ticket(C')) if C =/= none /\ C' =/= none .
 
 	op max_ticket : Configuration -> Nat .
 	eq max_ticket(none) = 0 .
 	eq max_ticket(< O : Dispenser | next: N, last: N' >) = 0 .
 	eq max_ticket(< N : BProcess | mode: M, number: N' >) = N' .
-	ceq max_ticket(C C') = mex(max_ticket(C), max_ticket(C')) 
+	ceq max_ticket(C C') = max(max_ticket(C), max_ticket(C')) 
 		if C =/= none /\ C' =/= none .
 
 	op collapse : Configuration Nat Nat -> Configuration .
@@ -74,9 +76,9 @@ mod ABSTRACT-BAKERY+ is
 		if C =/= none /\ C' =/= none .
 
 	ceq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
-		= [[< O : Dispenser | next: min, last: N' > simplify(C) ]] 
+		= [[< O : Dispenser | next: (min_ticket(C)), last: N' > simplify(C) ]] 
 		if N =/= 0 and N' =/= 0 
 		/\ max_ticket(C) > 1
-		/\ max_ticket(C) - min_ticket(C) + 1 > num_wating(C) 
+		/\ (max_ticket(C) - min_ticket(C)) + 1 > num_wating(C) 
 		/\ C' := collapse(C, min_ticket(C), 1) .
 endm
