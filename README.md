@@ -176,8 +176,28 @@ Como se puede observar, no es posible encontrar un contraejemplo, ya que el espa
 
 Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - next]`, ya el `last - next` no tiene como cota máxima el número de clientes en la panadería. Ya que un cliente al coger y soltar el ticket incrementa en 1 la diferencia `last - next`, y esto puede hacerse infinitamente. 
 
-### 11 - Utiliza la abstracción anterior para comprobar la no existencia de bloqueos y la exclusión mutua
+### 11 - Utiliza la abstracción anterior para comprobar la no existencia de bloqueos y la exclusión mutua utilizando el comando search.
 
+Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
+
+```
+Maude> load bakery+.maude 
+Maude> search initial(5) =>! S:GBState . 
+search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
+Debug(1)> q
+Bye.
+```
+Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos deberia mostrar una configuracion GBState (que puede ser cualquiera, ya que no hemos sugerido ningun filtro) la cual sea a su vez un estado final.
+
+Comprobamos la exclusión mútua para 5 procesos:
+
+```
+Maude> load bakery+.maude
+Maude> search [1] initial(5) =>* [[C < O : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .
+Debug(1)> q
+Bye.
+```
+Como se puede observar, no es posible encontrar un contraejemplo, ya que el espacio de busqueda es infinito.
 
 
 ## Ejercicio 3: El lenguaje PARALLEL++
