@@ -41,16 +41,16 @@ mod ABSTRACT-BAKERY+ is
 
 	op inf : -> Nat [ctor] .
 	
-	op minn : Nat Nat -> Nat .
-	eq minn(N, inf) = N .
-	eq minn(N,N') = min(N,N') .
+	op minf : Nat Nat -> Nat .
+	eq minf(N, inf) = N .
+	eq minf(N,N') = min(N,N') .
 
 	op min_ticket : Configuration -> Nat .
 	eq min_ticket(none) = inf .
 	eq min_ticket(< O : Dispenser | next: N, last: N' >) = inf .
+	eq min_ticket(< N : BProcess | mode: M, number: 0 >) = inf .
 	ceq min_ticket(< N : BProcess | mode: M, number: N' >) = N' if N' > 0  .
-	ceq min_ticket(< N : BProcess | mode: M, number: N' >) = inf if N' <= 0  .
-	ceq min_ticket(C C') = minn(min_ticket(C), min_ticket(C')) if C =/= none /\ C' =/= none .
+	ceq min_ticket(C C') = minf(min_ticket(C), min_ticket(C')) if C =/= none /\ C' =/= none .
 
 	op max_ticket : Configuration -> Nat .
 	eq max_ticket(none) = 0 .
@@ -61,24 +61,22 @@ mod ABSTRACT-BAKERY+ is
 
 	op collapse : Configuration Nat Nat -> Configuration .
 	eq collapse(none, N, N') = none .
-	ceq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
+	eq collapse(< X : BProcess | mode: M, number: N > C, N, N') 
 		= < X : BProcess | mode: M, number: N' > 
-		collapse(C, min_ticket(C), s(N')) 
-		if C =/= none .
+		collapse(C, min_ticket(C), s(N')) .
 
-	op num_wating : Configuration -> Nat .
-	eq num_wating(none) = 0 .
-	eq num_wating(< X : BProcess | mode: wait, number: N >) = 1 .
-	eq num_wating(< O : Dispenser | next: N, last: N' >) = 0 .
-	ceq num_wating(< X : BProcess | mode: M, number: N >) = 0 
+	op num_tickets : Configuration -> Nat .
+	eq num_tickets(none) = 0 .
+	eq num_tickets(< X : BProcess | mode: wait, number: N >) = 1 .
+	eq num_tickets(< O : Dispenser | next: N, last: N' >) = 0 .
+	ceq num_tickets(< X : BProcess | mode: M, number: N >) = 0 
 		if M =/= wait .
-	ceq num_wating(C C') = num_wating(C) + num_wating(C') 
+	ceq num_tickets(C C') = num_tickets(C) + num_tickets(C') 
 		if C =/= none /\ C' =/= none .
 
-	ceq [[< O : Dispenser | next: s(N), last: s(N') > C ]]
-		= [[< O : Dispenser | next: (min_ticket(C)), last: N' > collapse(C, min_ticket(C), 1 ) ]] 
-		if N =/= 0 and N' =/= 0 
-		/\ max_ticket(C) > 1
-		/\ (max_ticket(C) - min_ticket(C)) + 1 > num_wating(C) 
+	ceq [[< O : Dispenser | next: N, last: N' > C ]]
+		= [[< O : Dispenser | next: min_ticket(C'), last: max_ticket(C') > collapse(C, min_ticket(C), 1 ) ]] 
+		if min_ticket(C) =/= inf
+		/\ (max_ticket(C) - min_ticket(C)) + 1 > num_tickets(C) 
 		/\ C' := collapse(C, min_ticket(C), 1) .
 endm

@@ -148,7 +148,6 @@ Como la ejecucoion no termina, entonces es no terminante.
 
 ### 9 - ¿Es finito el espacio de búsqueda alcanzable a partir de estados definidos con el operador initial? Utiliza el comando search para comprobar la exclusión mutua del sistema con 5 procesos.
 
-<<<<<<< HEAD
 No, **no es finito** puesto que si un cliente coge un ticket y lo suelta seguidamente, lo que generamos es el mismo estado con _last_ incrementado en 1. Este proceso pude repetirse infinitamente, dando como resultado un infinito número de estados equivalentes con last diferentes.
 
 Si el espacio de búqueda fuese finito, el comando _search_ siempre terminaría. En cambio el siguiente comando no termina:
@@ -182,11 +181,12 @@ Primero que nada, comprobamos si existe algun estado de bloqueo mediante el sigu
 
 ```
 Maude> load bakery+.maude 
-Maude> search initial(5) =>! S:GBState . 
+Maude> search [1] initial(5) =>! S:GBState . 
 search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
 Debug(1)> q
 Bye.
 ```
+
 Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos deberia mostrar una configuracion GBState (que puede ser cualquiera, ya que no hemos sugerido ningun filtro) la cual sea a su vez un estado final.
 
 Comprobamos la exclusión mútua para 5 procesos:
