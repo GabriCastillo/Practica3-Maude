@@ -77,6 +77,7 @@ mod ABSTRACT-BAKERY+ is
 	ceq [[< O : Dispenser | next: N, last: N' > C ]]
 		= [[< O : Dispenser | next: min_ticket(C'), last: max_ticket(C') > collapse(C, min_ticket(C), 1 ) ]] 
 		if min_ticket(C) =/= inf
-		/\ (max_ticket(C) - min_ticket(C)) + 1 > num_tickets(C) 
-		/\ C' := collapse(C, min_ticket(C), 1) .
+		/\ C' := collapse(C, min_ticket(C), 1)
+		/\ ((max_ticket(C) - min_ticket(C)) + 1 > num_tickets(C) 
+			or min_ticket(C) > 1) .
 endm
