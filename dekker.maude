@@ -1,0 +1,53 @@
+load parallel.maude
+
+mod DEKKER is
+    inc PARALLEL .
+    subsort Int < Pid .
+    ops crit1 crit2 : -> UserStatement .
+    ops rem1 rem2 : -> LoopingUserStatement .
+    ops p1 p2 : -> Program .
+    op initialMem : -> Memory .
+    op initial : -> MachineState .
+    var  M : Memory .
+    vars P R : Program .
+    var  S : Soup . 
+    var  I : Pid .
+
+    eq p1 
+      = repeat
+            'c1 := 1 ;
+            while 'c2 = 1 do
+                if 'turn = 2 then
+                    'c1 := 0 ;
+                    while 'turn = 2 do skip od ;
+                    'c1 := 1
+                fi
+            od ;
+            crit1 ;
+            'turn := 2 ;
+            'c1 := 0 ;
+            rem1
+        forever .
+
+    eq p2 
+      = repeat
+            'c2 := 1 ;
+            while 'c1 = 1 do
+                if 'turn = 1 then
+                    'c2 := 0 ;
+                    while 'turn = 1 do skip od ;
+                    'c2 := 1
+                fi
+            od ;
+            crit2 ;
+            'turn := 1 ;
+            'c2 := 0 ;
+            rem2
+        forever .
+    eq initialMem = ['c1, 0] ['c2, 0] ['turn, 1] .
+    eq initial = { [1, p1] | [2, p2], initialMem} .
+endm
+
+search initial =>* {S | [1,crit1 ; R] | [2, crit2 ; P], M} .
+
+search initial =>! MS:MachineState .
