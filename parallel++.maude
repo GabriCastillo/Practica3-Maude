@@ -1,26 +1,31 @@
 ---- PARALLEL: A simple parallel language and its rewriting logic semantics.
 
 ---- Memory model with locations named by IntVars holding Ints.
+--- Aux Bool module with undefined value
+fmod VARIABLE is
+   pr QID * (sort Qid to Var, op qid to var) .
+   sorts IntVar BoolVar .
+   subsort IntVar BoolVar < Var .
+endfm
 
-fmod MEMORY is
-    protecting INT .
-    protecting BOOL .
+view IntVal from TRIV to INT is
+	sort Elt to Int .
+endv
+
+view BoolVal from TRIV to BOOL is
+	sort Elt to Bool .
+endv
+
+fmod MEMORY{Val :: TRIV} is
+    extending VARIABLE .
     sorts Memory .
-    sorts BoolVar IntVar var .
-    subsorts BoolVar IntVar < var .
-    subsorts BoolVar < Bool .
-    subsort IntVar < Int .
-    op turnN : -> IntVar .
-    op turnB : -> BoolVar .
     op none : -> Memory .
     op __ : Memory Memory -> Memory [assoc comm id: none] .
-    op [_,_] : IntVar Int -> Memory .
-    op _in_ : IntVar Memory -> BoolVar . ---- está Q en memoria?
-    var Q  Q' : IntVar .
+    op [_,_] : Var Val$Elt -> Memory .
+    op _in_ : Var Memory -> Bool .
+    var Q  Q' : Var .
     var M : Memory .
-    var N : Int .
-    var B' : BoolVar .
-    var B : Bool .
+    var N : Val$Elt .
     eq Q in [Q, N] M = true .
     eq Q in [Q', N] M = Q in M .
     eq Q in none = false .
@@ -29,21 +34,23 @@ endfm
 ---- Test comparing the contents of a named memory location to an integer. 
 ---- By default, value of non-allocated IntVar is 0.
 
-fmod TESTS is
-    inc MEMORY .
-    sort Test .
-    op _=_ : IntVar Int -> Test .
-    op _>’_ : IntVar Int -> Test .
-    op _!=_ : IntVar Int -> Test .
-    op _=_ : BoolVar Bool -> Test .
-    op _>’_ : BoolVar Bool -> Test .
-    op _!=_ : BoolVar Bool -> Test .
-    op _&_ : Test Test -> Test [assoc] .
-    op eval : Test Memory -> Bool .
+fmod TESTS-INT is
+    inc MEMORY{IntVal} * (sort Memory to IMemory) .
+    sort ITest .
+    op _=_ : IntVar Int -> ITest .
+    op _>’_ : IntVar Int -> ITest .
+    op _!=_ : IntVar Int -> ITest .
+
+    op _=_ : BoolVar Bool -> ITest .
+    op _>’_ : BoolVar Bool -> ITest .
+    op _!=_ : BoolVar Bool -> ITest .
+
+    op _&_ : ITest ITest -> ITest [assoc] .
+    op eval : ITest IMemory -> Bool .
     var Q : IntVar .
-    var M : Memory .
+    var M : IMemory .
     var N N’ K : Int .
-    vars T T’ : Test .
+    vars T T’ : ITest .
     eq eval(Q = N, [Q, N’] M) = N == N’ .
     ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
     eq eval(Q >’ N, [Q, K] M) = K > N .
@@ -51,27 +58,42 @@ fmod TESTS is
     eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
 endfm
 
+fmod TESTS-BOOL is
+    inc MEMORY{BoolVal} * (sort Memory to BMemory) .
+    sort BTest .
+
+    op _=_ : BoolVar Bool -> BTest .
+    op _>’_ : BoolVar Bool -> BTest .
+    op _!=_ : BoolVar Bool -> BTest .
+
+    op _&_ : BTest BTest -> BTest [assoc] .
+    op eval : BTest BMemory -> Bool .
+    var Q : IntVar .
+    var M : BMemory .
+   --- var N N’ K : Int .
+   --- vars T T’ : BTest .
+    ---eq eval(Q = N, [Q, N’] M) = N == N’ .
+    ---ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
+    ---eq eval(Q >’ N, [Q, K] M) = K > N .
+    ---eq eval(Q >’ N, M) = 0 > N [owise] .
+    ---eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
+endfm
+
 ---- Syntax for arithmetic expressions, and their evaluation semantics.
 ---- To avoid evaluation of expressions by themselves, the operators
 ---- + and * are specified as constructors with syntax +’ and *’ 
-fmod EXPRESSION is
-    inc MEMORY .
-    sort Expression .
-    sort Array .
-    subsorts IntVar Int < Expression .
-    op _+’_ : Expression Expression -> Expression [ctor] .
-    op _*’_ : Expression Expression -> Expression [ctor] .
-    op _-’_ : Expression Expression -> Expression [ctor] .
-    op eval : Expression Memory -> Int .
-    op nil : -> Array [ctor] .
-    op __ : Array Array -> Array .
-    op [_] : Bool -> Array . 
-    op [_] : Int -> Array . 
-    op _[_] : Int 
+fmod EXPRESSION-INT is
+    protecting TESTS-INT .
+    sort IExpression .
+    subsorts IntVar Int < IExpression .
+    op _+’_ : IExpression IExpression -> IExpression [ctor] .
+    op _*’_ : IExpression IExpression -> IExpression [ctor] .
+    op _-’_ : IExpression IExpression -> IExpression [ctor] .
+    op eval : IExpression IMemory -> Int .
     var Q : IntVar .
-    var M : Memory .
+    var M : IMemory .
     vars N N’ : Int .
-    vars E E’ : Expression .
+    vars E E’ : IExpression .
     eq eval(N, M) = N .
     eq eval(Q, [Q, N] M) = N .
     eq eval(Q, M) = 0 [owise] .
@@ -80,29 +102,53 @@ fmod EXPRESSION is
     eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
 endfm
 
+fmod EXPRESSION-BOOL is
+    protecting TESTS-BOOL .
+    sort BExpression .
+    subsorts BoolVar Bool < BExpression .
+    op eval : BExpression BMemory -> Bool .
+    var Q : BoolVar .
+    var M : BMemory .
+    vars N N’ : Bool .
+    vars E E’ : BExpression .
+    --- eq eval(N, M) = N .
+    --- eq eval(Q, [Q, N] M) = N .
+    --- eq eval(Q, M) = 0 [owise] .
+    --- eq eval(E +’ E’, M) = eval(E, M) + eval(E’, M) .
+    --- eq eval(E *’ E’, M) = eval(E, M) * eval(E’, M) .
+    --- eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
+endfm
+
 ---- Syntax for a trival sequential programming language. 
 ---- We allow abstracting out program fragments as elements of sorts LoopingUserStatement and UserStatement. 
 ---- LoopingUserStatements abstract out potentially nonterminating program fragments. 
 ---- UserStatements which are not LoopingUserStatements abstract out terminating program fragments.
 
-fmod SEQUENTIAL is
-    inc TESTS .
-    inc EXPRESSION .
+fmod SEQUENTIAL-BOOL is
+    protecting EXPRESSION-BOOL .
     sorts UserStatement LoopingUserStatement Program .
     subsort LoopingUserStatement < UserStatement < Program .
     op skip : -> Program .
     op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
-    op _:=_ : IntVar Expression -> Program .
-    op if_then_fi : Test Program -> Program .
-    op while_do_od : Test Program -> Program .
+    op _:=_ : BoolVar BExpression -> Program .
+    op _:=_ : BoolVar BExpression -> Program .
+    op if_then_fi : BTest Program -> Program .
+    op while_do_od : BTest Program -> Program .
     op repeat_forever : Program -> Program .
-    op if_then_else_fi : Test Program Program -> Program . 
-    op repeat_until_li : Program Test -> Program .
+    op if_then_else_fi : BTest Program Program -> Program . 
+    op repeat_until_li : Program BTest -> Program .
 endfm
 
-mod PARALLEL is
-    inc SEQUENTIAL .
-    inc TESTS .
+fmod SEQUENTIAL-INT is
+    protecting EXPRESSION-INT .
+    extending SEQUENTIAL-BOOL .
+    op _:=_ : IntVar IExpression -> Program .
+endfm
+
+
+mod PARALLEL++ is
+    inc SEQUENTIAL-INT .
+    inc SEQUENTIAL-BOOL .
     sorts Pid Process Soup MachineState .
     subsort Process < Soup .
     subsort Int < Pid .
@@ -137,4 +183,6 @@ mod PARALLEL is
     rl {[I, repeat P forever ; R] | S, M} 
       => {[I, P ; repeat P forever ; R] | S, M} .
 endm
+
+
 

@@ -15,6 +15,7 @@ fmod MEMORY is
   var M : Memory .
   var N : Int .
   eq Q in [Q, N] M = true .
+  eq Q in [Q', N] M = Q in M .
   eq Q in M = false [owise] .
 endfm
 
