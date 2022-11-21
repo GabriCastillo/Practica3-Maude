@@ -1,34 +1,46 @@
 ---- PARALLEL: A simple parallel language and its rewriting logic semantics.
 
----- Memory model with locations named by Qids holding Ints.
+---- Memory model with locations named by IntVars holding Ints.
 
 fmod MEMORY is
-  protecting INT .
-  protecting QID .
-  sorts Memory Bool? .
-  subsorts Bool < Bool? .
-  op none : -> Memory .
-  op __ : Memory Memory -> Memory [assoc comm id: none] .
-  op [_,_] : Qid Int -> Memory .
-  op _in_ : Qid Memory -> Bool? . ---- está Q en memoria?
-  var Q : Qid .
-  var M : Memory .
-  var N : Int .
-  eq Q in [Q, N] M = true .
-  eq Q in M = false [owise] .
+    protecting INT .
+    protecting BOOL .
+    sorts Memory .
+    sorts BoolVar IntVar var .
+    subsorts BoolVar IntVar < var .
+    subsorts BoolVar < Bool .
+    subsort IntVar < Int .
+    op turnN : -> IntVar .
+    op turnB : -> BoolVar .
+    op none : -> Memory .
+    op __ : Memory Memory -> Memory [assoc comm id: none] .
+    op [_,_] : IntVar Int -> Memory .
+    op _in_ : IntVar Memory -> BoolVar . ---- está Q en memoria?
+    var Q  Q' : IntVar .
+    var M : Memory .
+    var N : Int .
+    var B' : BoolVar .
+    var B : Bool .
+    eq Q in [Q, N] M = true .
+    eq Q in [Q', N] M = Q in M .
+    eq Q in none = false .
 endfm
 
 ---- Test comparing the contents of a named memory location to an integer. 
----- By default, value of non-allocated Qid is 0.
+---- By default, value of non-allocated IntVar is 0.
 
 fmod TESTS is
     inc MEMORY .
     sort Test .
-    op _=_ : Qid Int -> Test .
-    op _>’_ : Qid Int -> Test .
+    op _=_ : IntVar Int -> Test .
+    op _>’_ : IntVar Int -> Test .
+    op _!=_ : IntVar Int -> Test .
+    op _=_ : BoolVar Bool -> Test .
+    op _>’_ : BoolVar Bool -> Test .
+    op _!=_ : BoolVar Bool -> Test .
     op _&_ : Test Test -> Test [assoc] .
     op eval : Test Memory -> Bool .
-    var Q : Qid .
+    var Q : IntVar .
     var M : Memory .
     var N N’ K : Int .
     vars T T’ : Test .
@@ -43,20 +55,26 @@ endfm
 ---- To avoid evaluation of expressions by themselves, the operators
 ---- + and * are specified as constructors with syntax +’ and *’ 
 fmod EXPRESSION is
-    inc MEMORY . 
+    inc MEMORY .
     sort Expression .
-    subsorts Qid Int < Expression .
+    sort Array .
+    subsorts IntVar Int < Expression .
     op _+’_ : Expression Expression -> Expression [ctor] .
     op _*’_ : Expression Expression -> Expression [ctor] .
     op _-’_ : Expression Expression -> Expression [ctor] .
     op eval : Expression Memory -> Int .
-    var Q : Qid . 
-    var M : Memory . 
-    vars N N’ : Int . 
+    op nil : -> Array [ctor] .
+    op __ : Array Array -> Array .
+    op [_] : Bool -> Array . 
+    op [_] : Int -> Array . 
+    op _[_] : Int 
+    var Q : IntVar .
+    var M : Memory .
+    vars N N’ : Int .
     vars E E’ : Expression .
     eq eval(N, M) = N .
-    eq eval(Q, [Q, N] M) = N . 
-   ceq eval(Q,M) = 0 if Q in M =/= true .
+    eq eval(Q, [Q, N] M) = N .
+    eq eval(Q, M) = 0 [owise] .
     eq eval(E +’ E’, M) = eval(E, M) + eval(E’, M) .
     eq eval(E *’ E’, M) = eval(E, M) * eval(E’, M) .
     eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
@@ -74,10 +92,12 @@ fmod SEQUENTIAL is
     subsort LoopingUserStatement < UserStatement < Program .
     op skip : -> Program .
     op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
-    op _:=_ : Qid Expression -> Program .
+    op _:=_ : IntVar Expression -> Program .
     op if_then_fi : Test Program -> Program .
     op while_do_od : Test Program -> Program .
     op repeat_forever : Program -> Program .
+    op if_then_else_fi : Test Program Program -> Program . 
+    op repeat_until_li : Program Test -> Program .
 endfm
 
 mod PARALLEL is
@@ -96,7 +116,7 @@ mod PARALLEL is
     var  L : LoopingUserStatement .
     vars I J : Pid . 
     var  M : Memory .
-    var  Q : Qid . 
+    var  Q : IntVar . 
     vars N X : Int .
     var  T : Test . 
     var  E : Expression .
@@ -117,3 +137,4 @@ mod PARALLEL is
     rl {[I, repeat P forever ; R] | S, M} 
       => {[I, P ; repeat P forever ; R] | S, M} .
 endm
+
