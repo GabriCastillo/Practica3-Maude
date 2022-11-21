@@ -1,7 +1,3 @@
----- PARALLEL: A simple parallel language and its rewriting logic semantics.
-
----- Memory model with locations named by IntVars holding Ints.
---- Aux Bool module with undefined value
 fmod VARIABLE is
    pr QID * (sort Qid to Var, op qid to var) .
    sorts IntVar BoolVar .
@@ -31,8 +27,7 @@ fmod MEMORY{Val :: TRIV} is
     eq Q in none = false .
 endfm
 
----- Test comparing the contents of a named memory location to an integer. 
----- By default, value of non-allocated IntVar is 0.
+
 
 fmod TESTS-INT is
     inc MEMORY{IntVal} * (sort Memory to IMemory) .
@@ -79,9 +74,6 @@ fmod TESTS-BOOL is
     ---eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
 endfm
 
----- Syntax for arithmetic expressions, and their evaluation semantics.
----- To avoid evaluation of expressions by themselves, the operators
----- + and * are specified as constructors with syntax +’ and *’ 
 fmod EXPRESSION-INT is
     protecting TESTS-INT .
     sort IExpression .
@@ -118,11 +110,6 @@ fmod EXPRESSION-BOOL is
     --- eq eval(E *’ E’, M) = eval(E, M) * eval(E’, M) .
     --- eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
 endfm
-
----- Syntax for a trival sequential programming language. 
----- We allow abstracting out program fragments as elements of sorts LoopingUserStatement and UserStatement. 
----- LoopingUserStatements abstract out potentially nonterminating program fragments. 
----- UserStatements which are not LoopingUserStatements abstract out terminating program fragments.
 
 fmod SEQUENTIAL-BOOL is
     protecting EXPRESSION-BOOL .
