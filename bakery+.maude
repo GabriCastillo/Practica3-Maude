@@ -81,7 +81,7 @@ mod ABSTRACT-BAKERY+ is
 		if C =/= none /\ C' =/= none .
 
 	ceq [[< O : Dispenser | next: N, last: N' > C ]]
-		= [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > collapse(C, minTicket(C), 1 ) ]] 
+		= [[< O : Dispenser | next: minTicket(C'), last: maxTicket(C') > C' ]] 
 		if minTicket(C) =/= inf
 		/\ C' := collapse(C, minTicket(C), 1)
 		/\ ((maxTicket(C) - minTicket(C)) + 1 > numTickets(C) 
