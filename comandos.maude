@@ -1,0 +1,1 @@
+red isCrit(< 0 : BProcess | mode: crit,number: 0 > < 1 : BProcess | mode: wait,number: 1 > < 2 : BProcess | mode: sleep,number: 0 >) .
