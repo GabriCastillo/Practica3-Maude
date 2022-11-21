@@ -1,16 +1,7 @@
 fmod VARIABLE is
-   pr QID * (sort Qid to Var, op qid to var) .
-   sorts IntVar BoolVar .
+   sorts IntVar BoolVar Var .
    subsort IntVar BoolVar < Var .
 endfm
-
-view IntVal from TRIV to INT is
-	sort Elt to Int .
-endv
-
-view BoolVal from TRIV to BOOL is
-	sort Elt to Bool .
-endv
 
 fmod MEMORY{Val :: TRIV} is
     extending VARIABLE .
@@ -27,98 +18,90 @@ fmod MEMORY{Val :: TRIV} is
     eq Q in none = false .
 endfm
 
+view IntVal from TRIV to INT is
+	sort Elt to Int .
+endv
 
+view BoolVal from TRIV to BOOL is
+	sort Elt to Bool .
+endv
 
-fmod TESTS-INT is
-    inc MEMORY{IntVal} * (sort Memory to IMemory) .
-    sort ITest .
-    op _=_ : IntVar Int -> ITest .
-    op _>’_ : IntVar Int -> ITest .
-    op _!=_ : IntVar Int -> ITest .
+fmod EXPRESSION-BOOL is
+    including MEMORY{BoolVal} * (sort Memory to BMemory) .
 
-    op _=_ : BoolVar Bool -> ITest .
-    op _>’_ : BoolVar Bool -> ITest .
-    op _!=_ : BoolVar Bool -> ITest .
+    sort BExpression BTest .
+    subsorts BoolVar Bool < BExpression .
 
-    op _&_ : ITest ITest -> ITest [assoc] .
-    op eval : ITest IMemory -> Bool .
-    var Q : IntVar .
-    var M : IMemory .
-    var N N’ K : Int .
-    vars T T’ : ITest .
-    eq eval(Q = N, [Q, N’] M) = N == N’ .
-    ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
-    eq eval(Q >’ N, [Q, K] M) = K > N .
-    eq eval(Q >’ N, M) = 0 > N [owise] .
-    eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
-endfm
-
-fmod TESTS-BOOL is
-    inc MEMORY{BoolVal} * (sort Memory to BMemory) .
-    sort BTest .
+    var V : BoolVar .
+    var M : BMemory .
+    vars B B' : Bool .
+    vars E E’ : BExpression .
 
     op _=_ : BoolVar Bool -> BTest .
-    op _>’_ : BoolVar Bool -> BTest .
     op _!=_ : BoolVar Bool -> BTest .
-
-    op _&_ : BTest BTest -> BTest [assoc] .
     op eval : BTest BMemory -> Bool .
-    var Q : IntVar .
-    var M : BMemory .
-   --- var N N’ K : Int .
-   --- vars T T’ : BTest .
-    ---eq eval(Q = N, [Q, N’] M) = N == N’ .
-    ---ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
-    ---eq eval(Q >’ N, [Q, K] M) = K > N .
-    ---eq eval(Q >’ N, M) = 0 > N [owise] .
-    ---eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
+
+    eq eval(V = B, [V, B'] M) = B == B' .
+    ceq eval(V = B, M) = B == false if V in M =/= true .
+    eq eval(V != B, M) = not eval(V = B, M) .
+
+    op _&_ : BExpression BExpression -> BExpression [comm assoc] .
+    op eval : BExpression BMemory -> Bool .
+
+    eq eval(B, M) = B .
+    eq eval(V, [V, B] M) = B .
+    eq eval(V, M) = false [owise] .
+
+    eq eval(E & E’, M) = eval(E, M) and eval(E’, M) .
 endfm
 
 fmod EXPRESSION-INT is
-    protecting TESTS-INT .
-    sort IExpression .
+    including MEMORY{IntVal} * (sort Memory to IMemory) .
+
+    sort IExpression ITest .
     subsorts IntVar Int < IExpression .
+
+    var V : IntVar .
+    var M : IMemory .
+    vars N N' : Int .
+    vars E E’ : IExpression .
+
+    op _=_ : IntVar Int -> ITest .
+    op _>’_ : IntVar Int -> ITest .
+    op _!=_ : IntVar Int -> ITest .
+    op eval : ITest IMemory -> Bool .
+
+    eq eval(V = N, [V, N'] M) = N == N' .
+    ceq eval(V = N, M) = N == 0 if V in M =/= true .
+    eq eval(V >’ N, [V, N'] M) = N' > N .
+    eq eval(V >’ N, M) = 0 > N [owise] .
+    eq eval(V != N, M) = eval(V = N, M) =/= true .
+
     op _+’_ : IExpression IExpression -> IExpression [ctor] .
     op _*’_ : IExpression IExpression -> IExpression [ctor] .
     op _-’_ : IExpression IExpression -> IExpression [ctor] .
     op eval : IExpression IMemory -> Int .
-    var Q : IntVar .
-    var M : IMemory .
-    vars N N’ : Int .
-    vars E E’ : IExpression .
+
     eq eval(N, M) = N .
-    eq eval(Q, [Q, N] M) = N .
-    eq eval(Q, M) = 0 [owise] .
+    eq eval(V, [V, N] M) = N .
+    eq eval(V, M) = 0 [owise] .
+
     eq eval(E +’ E’, M) = eval(E, M) + eval(E’, M) .
     eq eval(E *’ E’, M) = eval(E, M) * eval(E’, M) .
     eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
 endfm
 
-fmod EXPRESSION-BOOL is
-    protecting TESTS-BOOL .
-    sort BExpression .
-    subsorts BoolVar Bool < BExpression .
-    op eval : BExpression BMemory -> Bool .
-    var Q : BoolVar .
-    var M : BMemory .
-    vars N N’ : Bool .
-    vars E E’ : BExpression .
-    --- eq eval(N, M) = N .
-    --- eq eval(Q, [Q, N] M) = N .
-    --- eq eval(Q, M) = 0 [owise] .
-    --- eq eval(E +’ E’, M) = eval(E, M) + eval(E’, M) .
-    --- eq eval(E *’ E’, M) = eval(E, M) * eval(E’, M) .
-    --- eq eval(E -’ E’, M) = eval(E, M) - eval(E’, M) .
-endfm
-
-fmod SEQUENTIAL-BOOL is
+fmod SEQUENTIAL is
     protecting EXPRESSION-BOOL .
+    protecting EXPRESSION-INT .
+
     sorts UserStatement LoopingUserStatement Program .
     subsort LoopingUserStatement < UserStatement < Program .
+
     op skip : -> Program .
     op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
     op _:=_ : BoolVar BExpression -> Program .
-    op _:=_ : BoolVar BExpression -> Program .
+    op _:=_ : IntVar IExpression -> Program .
     op if_then_fi : BTest Program -> Program .
     op while_do_od : BTest Program -> Program .
     op repeat_forever : Program -> Program .
@@ -126,23 +109,19 @@ fmod SEQUENTIAL-BOOL is
     op repeat_until_li : Program BTest -> Program .
 endfm
 
-fmod SEQUENTIAL-INT is
-    protecting EXPRESSION-INT .
-    extending SEQUENTIAL-BOOL .
-    op _:=_ : IntVar IExpression -> Program .
-endfm
-
-
+---(
 mod PARALLEL++ is
-    inc SEQUENTIAL-INT .
-    inc SEQUENTIAL-BOOL .
+    inc SEQUENTIAL .
+
     sorts Pid Process Soup MachineState .
     subsort Process < Soup .
     subsort Int < Pid .
+
     op [_,_] : Pid Program -> Process .
     op empty : -> Soup .
     op _|_ : Soup Soup -> Soup [prec 61 assoc comm id: empty] .
     op {_,_} : Soup Memory -> MachineState .
+
     vars P R : Program . 
     var  S : Soup .
     var  U : UserStatement . 
@@ -153,6 +132,7 @@ mod PARALLEL++ is
     vars N X : Int .
     var  T : Test . 
     var  E : Expression .
+
     rl {[I, L ; R] | S, M} => {[I, L ; R] | S, M} .
     rl {[I, U ; R] | S, M} => {[I, R] | S, M} .
     rl {[I, (Q := E) ; R] | S, [Q, X] M} 
@@ -170,6 +150,7 @@ mod PARALLEL++ is
     rl {[I, repeat P forever ; R] | S, M} 
       => {[I, P ; repeat P forever ; R] | S, M} .
 endm
+)---
 
 
 

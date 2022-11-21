@@ -3,20 +3,18 @@
 ---- Memory model with locations named by Qids holding Ints.
 
 fmod MEMORY is
-  protecting INT .
-  protecting QID .
-  sorts Memory Bool? .
-  subsorts Bool < Bool? .
-  op none : -> Memory .
-  op __ : Memory Memory -> Memory [assoc comm id: none] .
-  op [_,_] : Qid Int -> Memory .
-  op _in_ : Qid Memory -> Bool? . ---- está Q en memoria?
-  var Q : Qid .
-  var M : Memory .
-  var N : Int .
-  eq Q in [Q, N] M = true .
-  eq Q in [Q', N] M = Q in M .
-  eq Q in M = false [owise] .
+    protecting INT .
+    protecting QID .
+    sorts Memory Bool? .
+    subsorts Bool < Bool? .
+    op none : -> Memory .
+    op __ : Memory Memory -> Memory [assoc comm id: none] .
+    op [_,_] : Qid Int -> Memory .
+    op _in_ : Qid Memory -> Bool? . ---- cell allocated for Q?
+    var Q : Qid . 
+    var M : Memory . 
+    var N : Int .
+    eq Q in [Q, N] M = true . ---- incomplete, only positive cases
 endfm
 
 ---- Test comparing the contents of a named memory location to an integer. 
@@ -29,14 +27,14 @@ fmod TESTS is
     op _>’_ : Qid Int -> Test .
     op _&_ : Test Test -> Test [assoc] .
     op eval : Test Memory -> Bool .
-    var Q : Qid .
+    var Q : Qid . 
     var M : Memory .
-    var N N’ K : Int .
+    var N N’ K : Int . 
     vars T T’ : Test .
     eq eval(Q = N, [Q, N’] M) = N == N’ .
-    ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
+   ceq eval(Q = N, M) = N == 0 if Q in M =/= true .
     eq eval(Q >’ N, [Q, K] M) = K > N .
-    eq eval(Q >’ N, M) = 0 > N [owise] .
+   ceq eval(Q >’ N, M) = 0 > N if Q in M =/= true .
     eq eval(T & T’, M) = eval(T, M) and eval(T’, M) .
 endfm
 
