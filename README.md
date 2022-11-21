@@ -177,10 +177,12 @@ Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - ne
 
 ### 11 - Utiliza la abstracción anterior para comprobar la no existencia de bloqueos y la exclusión mutua utilizando el comando search.
 
+**Nota**: Para este ejercicio hemos tenido que modificar el bakery.maude para añadir una condición a la regla to _to\_crit_ para que no aplicar la regla si ya hay un _crit_. De modo que no puedan habber dos procesos en la sección crítica. El archivo modificado se llama _bakery\_ej2.maude_. 
+
 Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
 
 ```
-Maude> search initial(3) =>! S:GBState .
+Maude> search initial(5) =>! S:GBState .
 search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
 
 No solution.

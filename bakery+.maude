@@ -1,4 +1,4 @@
-load bakery.maude
+load bakery_ej2.maude
 
 mod BAKERY+ is
 	including BAKERY .
