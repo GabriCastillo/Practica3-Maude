@@ -3,6 +3,14 @@ fmod VARIABLE is
    subsort IntVar BoolVar < Var .
 endfm
 
+view IntVal from TRIV to INT is
+	sort Elt to Int .
+endv
+
+view BoolVal from TRIV to BOOL is
+	sort Elt to Bool .
+endv
+
 fmod MEMORY{Val :: TRIV} is
     extending VARIABLE .
     sorts Memory .
@@ -17,14 +25,6 @@ fmod MEMORY{Val :: TRIV} is
     eq Q in [Q', N] M = Q in M .
     eq Q in none = false .
 endfm
-
-view IntVal from TRIV to INT is
-	sort Elt to Int .
-endv
-
-view BoolVal from TRIV to BOOL is
-	sort Elt to Bool .
-endv
 
 fmod EXPRESSION-BOOL is
     including MEMORY{BoolVal} * (sort Memory to BMemory) .
@@ -93,7 +93,7 @@ endfm
 
 fmod SEQUENTIAL is
     protecting EXPRESSION-BOOL .
-    protecting EXPRESSION-INT .
+  ---  protecting EXPRESSION-INT .
 
     sorts UserStatement LoopingUserStatement Program .
     subsort LoopingUserStatement < UserStatement < Program .
@@ -101,7 +101,7 @@ fmod SEQUENTIAL is
     op skip : -> Program .
     op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
     op _:=_ : BoolVar BExpression -> Program .
-    op _:=_ : IntVar IExpression -> Program .
+   --- op _:=_ : IntVar IExpression -> Program .
     op if_then_fi : BTest Program -> Program .
     op while_do_od : BTest Program -> Program .
     op repeat_forever : Program -> Program .
@@ -109,29 +109,45 @@ fmod SEQUENTIAL is
     op repeat_until_li : Program BTest -> Program .
 endfm
 
+fmod SEQUENTIAL-I is
+  ---  protecting EXPRESSION-BOOL .
+    protecting EXPRESSION-INT .
+
+    sorts Programa .
+
+    op _:=_ : IntVar IExpression -> Programa .
+  
+endfm
 ---(
 mod PARALLEL++ is
     inc SEQUENTIAL .
+    inc SEQUENTIAL-I .
 
-    sorts Pid Process Soup MachineState .
+    sorts Pid Process Soup MachineState pr .
     subsort Process < Soup .
     subsort Int < Pid .
+    subsorts Program Programa < pr .
+
 
     op [_,_] : Pid Program -> Process .
     op empty : -> Soup .
     op _|_ : Soup Soup -> Soup [prec 61 assoc comm id: empty] .
-    op {_,_} : Soup Memory -> MachineState .
+    op {_,_} : Soup IMemory -> MachineState .
+    op {_,_} : Soup BMemory -> MachineState .
 
     vars P R : Program . 
     var  S : Soup .
     var  U : UserStatement . 
     var  L : LoopingUserStatement .
     vars I J : Pid . 
-    var  M : Memory .
+    var  M : IMemory .
+    var  M' : BMemory .
     var  Q : IntVar . 
     vars N X : Int .
-    var  T : Test . 
-    var  E : Expression .
+    var  T : ITest . 
+    var  T' : BTest .
+    var  E : IExpression .
+    var  E : BExpression .
 
     rl {[I, L ; R] | S, M} => {[I, L ; R] | S, M} .
     rl {[I, U ; R] | S, M} => {[I, R] | S, M} .
