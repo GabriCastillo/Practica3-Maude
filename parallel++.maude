@@ -106,6 +106,13 @@ fmod SEQUENTIAL is
     op repeat_forever : Program -> Program .
     op if_then_else_fi : BTest Program Program -> Program . 
     op repeat_until_li : Program BTest -> Program .
+
+
+    op if_then_fi : ITest Program -> Program .
+    op while_do_od : ITest Program -> Program .
+    op repeat_forever : Program -> Program .
+    op if_then_else_fi : ITest Program Program -> Program . 
+    op repeat_until_li : Program ITest -> Program .
 endfm
 
 
@@ -116,6 +123,7 @@ mod PARALLEL++ is
     sorts Pid Process Soup MachineState  .
     subsort Process < Soup .
     subsort Int < Pid .
+
 
     op [_,_] : Pid Program -> Process .
     op empty : -> Soup .
@@ -133,7 +141,7 @@ mod PARALLEL++ is
     var  X : Int .
     var  A : Bool .
     var  T : ITest . 
-    var  T' : BTest .
+    var  T' : BTest . 
     var  IE : IExpression .
     var  BE : BExpression .
 
@@ -142,17 +150,17 @@ mod PARALLEL++ is
     rl {[I, U ; R] | S, M} => {[I, R] | S, M} .
 
     rl {[I, (Q := IE) ; R] | S, [Q, X] M} => {[I, R] | S, [Q, eval(IE, [Q, X] M)] M} .
-    ---rl {[I, (Q' := BE) ; R] | S, [Q', X] M} => {[I, R] | S, [Q', eval(BE, [Q', X] M)] M} .
+    rl {[I, (Q' := BE) ; R] | S, [Q', A] M} => {[I, R] | S, [Q', eval(BE, [Q', A] M)] M} .
 
 
     crl {[I, (Q := IE) ; R] | S, M} => {[I, R] | S, [Q, eval(IE, M)] M} if Q in M =/= true .
     crl {[I, (Q' := BE) ; R] | S, M} => {[I, R] | S, [Q', eval(BE, M)] M} if Q' in M =/= true .
 
-  ---  rl {[I, if T then P fi ; R] | S, M}  => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
+    rl {[I, if T then P fi ; R] | S, M}  => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
     rl {[I, if T' then P fi ; R] | S, M}  => {[I, if eval(T', M) then P else skip fi ; R] | S, M} .
 
 
-  ---  rl {[I, while T do P od ; R] | S, M}  => {[I, if eval(T, M) then (P ; while T do P od) else skip fi ; R] | S, M} .
+    rl {[I, while T do P od ; R] | S, M}  => {[I, if eval(T, M) then (P ; while T do P od) else skip fi ; R] | S, M} .
     rl {[I, while T' do P od ; R] | S, M}  => {[I, if eval(T', M) then (P ; while T' do P od) else skip fi ; R] | S, M} .
 
     rl {[I, repeat P forever ; R] | S, M} => {[I, P ; repeat P forever ; R] | S, M} .
