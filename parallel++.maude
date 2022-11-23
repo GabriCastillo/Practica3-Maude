@@ -1,7 +1,41 @@
+view Int from TRIV to INT is
+	sort Elt to Int .
+endv
+
+view Bool from TRIV to BOOL is
+	sort Elt to Bool .
+endv
+
+
 fmod MEMORY is
     pr INT .
     pr BOOL .
+    pr LIST{Int} .
+    pr LIST{Bool} .
     sorts Memory IntVar BoolVar .
+
+    --- op Iturn : -> IntVar .
+    --- op Bturn : -> BoolVar .
+
+    subsort Int < List{Int} .
+    subsort Bool < List{Bool} .
+
+    op Inil : -> List{Int} [ctor] .
+    op _,_ : List{Int} List{Int}  -> List{Int}  [ctor assoc id: nil prec 42]  .
+
+    op Bnil : -> List{Bool} [ctor] .
+    op _,_ : List{Bool} List{Bool}  -> List{Bool}  [ctor assoc id: nil prec 42]  .
+ 
+
+    op _[_] :  Int List{Int} -> Int .
+    op _[_] :  Int List{Bool} -> Bool .
+
+    op _[_] :=_ : Int List{Int} Int -> List{Int} .
+    op _[_] :=_ : Int List{Bool} Bool -> List{Bool} .
+    
+    op [_,_] : IntVar List{Int} -> Memory .
+    op [_,_] : BoolVar List{Bool} -> Memory .
+
     op none : -> Memory .
     op __ : Memory Memory -> Memory [assoc comm id: none] .
     op [_,_] : IntVar Int -> Memory .
@@ -22,6 +56,11 @@ fmod MEMORY is
     eq Q' in [Q', N'] M = true .
     eq Q' in [Z, N'] M = Q' in M .
     eq Q' in none = false .
+
+
+    eq N[Inil] = Inil .
+    eq N[Inil] = Inil .
+    eq N[Inil] = Inil .
 endfm
 
 fmod EXPRESSION is
@@ -85,9 +124,6 @@ fmod EXPRESSION is
     eq eval(IE +’ IE’, M) = eval(IE, M) + eval(IE’, M) .
     eq eval(IE *’ IE’, M) = eval(IE, M) * eval(IE’, M) .
     eq eval(IE -’ IE’, M) = eval(IE, M) - eval(IE’, M) .
-
-
-
 
 endfm
 
