@@ -46,8 +46,10 @@ fmod MEMORY is
     var Q  W : IntVar .
     var Q' Z : BoolVar .
     var M : Memory .
-    var N : Int .
-    var N' : Bool .
+    var N E I : Int .
+    var N' E' B : Bool .
+    var li : List{Int} .
+    var lb : List{Bool} .
 
     eq Q in [Q, N] M = true .
     eq Q in [W, N] M = Q in M .
@@ -59,8 +61,21 @@ fmod MEMORY is
 
 
     eq N[Inil] = Inil .
-    eq N[Inil] = Inil .
-    eq N[Inil] = Inil .
+    eq s(N)[E li] = N[li] .
+    eq 0[E li] = E .
+
+    eq N[Bnil] = Bnil .
+    eq s(N)[E' lb] = N[lb] .
+    eq 0[E' lb] = E' .
+
+
+    eq N[Inil]:= E = E .
+    eq s(N)[E li]:= I = (E N[li]:= I)  .
+    eq 0[E li]:= I = E I li .
+
+    eq N[Bnil]:= E' = E' .
+    eq s(N)[E' lb]:= B = E' (N[lb]:= B)  .
+    eq 0[E' lb]:= B = E' B lb .
 endfm
 
 fmod EXPRESSION is
