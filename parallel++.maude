@@ -101,18 +101,12 @@ fmod SEQUENTIAL is
     op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
     op _:=_ : BoolVar BExpression -> Program .
     op _:=_ : IntVar IExpression -> Program .
+
     op if_then_fi : BTest Program -> Program .
     op while_do_od : BTest Program -> Program .
     op repeat_forever : Program -> Program .
     op if_then_else_fi : BTest Program Program -> Program . 
     op repeat_until_li : Program BTest -> Program .
-
-
-    op if_then_fi : ITest Program -> Program .
-    op while_do_od : ITest Program -> Program .
-    op repeat_forever : Program -> Program .
-    op if_then_else_fi : ITest Program Program -> Program . 
-    op repeat_until_li : Program ITest -> Program .
 endfm
 
 
@@ -140,8 +134,7 @@ mod PARALLEL++ is
     var  Q' : BoolVar . 
     var  X : Int .
     var  A : Bool .
-    var  T : ITest . 
-    var  T' : BTest . 
+    var  T : BTest . 
     var  IE : IExpression .
     var  BE : BExpression .
 
@@ -157,11 +150,9 @@ mod PARALLEL++ is
     crl {[I, (Q' := BE) ; R] | S, M} => {[I, R] | S, [Q', eval(BE, M)] M} if Q' in M =/= true .
 
     rl {[I, if T then P fi ; R] | S, M}  => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
-    rl {[I, if T' then P fi ; R] | S, M}  => {[I, if eval(T', M) then P else skip fi ; R] | S, M} .
 
 
     rl {[I, while T do P od ; R] | S, M}  => {[I, if eval(T, M) then (P ; while T do P od) else skip fi ; R] | S, M} .
-    rl {[I, while T' do P od ; R] | S, M}  => {[I, if eval(T', M) then (P ; while T' do P od) else skip fi ; R] | S, M} .
 
     rl {[I, repeat P forever ; R] | S, M} => {[I, P ; repeat P forever ; R] | S, M} .
       
