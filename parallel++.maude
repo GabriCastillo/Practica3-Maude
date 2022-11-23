@@ -138,7 +138,7 @@ fmod EXPRESSION is
 
     eq eval(IE +’ IE’, M) = eval(IE, M) + eval(IE’, M) .
     eq eval(IE *’ IE’, M) = eval(IE, M) * eval(IE’, M) .
-    eq eval(IE -’ IE’, M) = eval(IE, M) - eval(IE’, M) .
+    eq eval(IE -’ IE’, M) = eval(IE, M) (- eval(IE’, M)) .
 
 endfm
 
