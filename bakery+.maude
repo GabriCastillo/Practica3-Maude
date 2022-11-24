@@ -46,7 +46,7 @@ mod ABSTRACT-BAKERY+ is
 		/\ N =/= 0 .
 	ceq [[ < O : Dispenser | next: N, last: s(N') > C ]] =
 		[[ < O : Dispenser | next: N, last: N' > C ]] 
-		if not containsTicket(C, s(N')) 
+		if not containsTicket(C, N') 
 		/\ N <= N' .
 	ceq [[ < N : BProcess | mode: M, number: s(N') > C ]] =
 		[[ < N : BProcess | mode: M, number: N' > C ]]
