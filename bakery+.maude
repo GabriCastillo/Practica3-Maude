@@ -27,7 +27,7 @@ mod BAKERY+ is
 		[[ < O : Dispenser | next: N, last: M > C ]] 
 		=> 
 		[[ < O : Dispenser | next: s(N), last: M > C ]] 
-		if containsTicket(C, N) 
+		if not containsTicket(C, N) 
 		/\ N < M . 
 endm
 
@@ -40,27 +40,16 @@ mod ABSTRACT-BAKERY+ is
 	vars N N' X X' : Nat .
 	vars C C' : Configuration .
 
-	ceq [[ < O : Dispenser | next: s(N), last: s(N) > C ]] =
-		[[ < O : Dispenser | next: N, last: N > C ]] 
-		if N =/= 0 .
-	ceq [[ < O : Dispenser | next: s(N), last: N' > 
-		< X : BProcess | mode: M, number: s(N) > C ]] =
-		[[ < O : Dispenser | next: N, last: N' > 
-		< X : BProcess | mode: M, number: N > C ]] 
-		if containsTicket(C, N) 
+	ceq [[ < O : Dispenser | next: s(N), last: N' > C ]] =
+		[[ < O : Dispenser | next: N, last: N' > C ]] 
+		if not containsTicket(C, s(N)) 
 		/\ N =/= 0 .
-	ceq [[ < O : Dispenser | next: N, last: s(N') > 
-		< X : BProcess | mode: M, number: s(N') > C ]] =
-		[[ < O : Dispenser | next: N, last: N' > 
-		< X : BProcess | mode: M, number: N' > C ]] 
-		if containsTicket(C, N') 
+	ceq [[ < O : Dispenser | next: N, last: s(N') > C ]] =
+		[[ < O : Dispenser | next: N, last: N' > C ]] 
+		if not containsTicket(C, s(N')) 
+		/\ N <= N' .
+	ceq [[ < N : BProcess | mode: M, number: s(N') > C ]] =
+		[[ < N : BProcess | mode: M, number: N' > C ]]
+		if not containsTicket(C, N') 
 		/\ N' =/= 0 .
-	ceq [[ < O : Dispenser | next: N, last: N' > 
-		< X : BProcess | mode: M, number: s(X') > C ]] =
-		[[ < O : Dispenser | next: N, last: N' > 
-		< X : BProcess | mode: M, number: X' > C ]]
-		if containsTicket(C, X') 
-		/\ X' =/= 0 
-		/\ N =/= s(X') 
-		/\ N' =/= s(X') .
 endm
