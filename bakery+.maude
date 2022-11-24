@@ -16,7 +16,7 @@ mod BAKERY+ is
 	eq droppedTicket(< N : BProcess | mode: sleep, number: M > C, T) = false .
 	ceq droppedTicket(< N : BProcess | mode: S, number: M > C, T) = 
 		if M == T 
-		then false 
+		then false     
 		else droppedTicket(C, T) fi 
 		if S =/= sleep .
 
@@ -29,7 +29,8 @@ mod BAKERY+ is
 		[[ < O : Dispenser | next: N, last: M > C ]] 
 		=> 
 		[[ < O : Dispenser | next: s(N), last: M > C ]] 
-		if droppedTicket(C, N) . 
+		if droppedTicket(C, N) 
+		/\ N < M . 
 endm
 
 mod ABSTRACT-BAKERY+ is 
@@ -41,6 +42,9 @@ mod ABSTRACT-BAKERY+ is
 	vars N N' X X' : Nat .
 	vars C C' : Configuration .
 
+	ceq [[ < O : Dispenser | next: s(N), last: s(N) > C ]] =
+		[[ < O : Dispenser | next: N, last: N > C ]] 
+		if N =/= 0 .
 	ceq [[ < O : Dispenser | next: s(N), last: N' > 
 		< X : BProcess | mode: M, number: s(N) > C ]] =
 		[[ < O : Dispenser | next: N, last: N' > 
