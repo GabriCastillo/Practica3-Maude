@@ -8,17 +8,15 @@ mod BAKERY+ is
 	var S : Mode .
 	var C : Configuration .
 	
-	op droppedTicket : Configuration Nat -> Bool .
+	op containsTicket : Configuration Nat -> Bool .
 
-	eq droppedTicket(none, T) = true .
-	eq droppedTicket(< O : Dispenser | next: N, last: M > C, T) = 
-		droppedTicket(C, T) .
-	eq droppedTicket(< N : BProcess | mode: sleep, number: M > C, T) = false .
-	ceq droppedTicket(< N : BProcess | mode: S, number: M > C, T) = 
+	eq containsTicket(none, T) = false .
+	eq containsTicket(< O : Dispenser | next: N, last: M > C, T) = 
+		containsTicket(C, T) .
+	eq containsTicket(< N : BProcess | mode: S, number: M > C, T) = 
 		if M == T 
-		then false     
-		else droppedTicket(C, T) fi 
-		if S =/= sleep .
+		then true     
+		else containsTicket(C, T) fi .
 
 	crl [drop_ticket] : 
 		[[ < N : BProcess | mode: wait, number: M > C ]] 
@@ -29,7 +27,7 @@ mod BAKERY+ is
 		[[ < O : Dispenser | next: N, last: M > C ]] 
 		=> 
 		[[ < O : Dispenser | next: s(N), last: M > C ]] 
-		if droppedTicket(C, N) 
+		if containsTicket(C, N) 
 		/\ N < M . 
 endm
 
@@ -49,21 +47,19 @@ mod ABSTRACT-BAKERY+ is
 		< X : BProcess | mode: M, number: s(N) > C ]] =
 		[[ < O : Dispenser | next: N, last: N' > 
 		< X : BProcess | mode: M, number: N > C ]] 
-		if droppedTicket(C, N) 
+		if containsTicket(C, N) 
 		/\ N =/= 0 .
 	ceq [[ < O : Dispenser | next: N, last: s(N') > 
 		< X : BProcess | mode: M, number: s(N') > C ]] =
 		[[ < O : Dispenser | next: N, last: N' > 
 		< X : BProcess | mode: M, number: N' > C ]] 
-		if droppedTicket(C, N') 
+		if containsTicket(C, N') 
 		/\ N' =/= 0 .
-	ceq [[ 
-		< O : Dispenser | next: N, last: N' > 
+	ceq [[ < O : Dispenser | next: N, last: N' > 
 		< X : BProcess | mode: M, number: s(X') > C ]] =
-		[[ 
-		< O : Dispenser | next: N, last: N' > 
+		[[ < O : Dispenser | next: N, last: N' > 
 		< X : BProcess | mode: M, number: X' > C ]]
-		if droppedTicket(C, X') 
+		if containsTicket(C, X') 
 		/\ X' =/= 0 
 		/\ N =/= s(X') 
 		/\ N' =/= s(X') .
