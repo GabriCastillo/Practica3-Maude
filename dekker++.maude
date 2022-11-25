@@ -2,6 +2,9 @@ load parallel++.maude
 
 mod DEKKER++ is
     inc PARALLEL++ .
+
+    subsorts  Bool < BExpression .
+    subsorts  Int < IExpression .
     ops crit1 crit2 : -> UserStatement .
     ops rem1 rem2 : -> LoopingUserStatement .
     ops p1 p2 : -> Program .
