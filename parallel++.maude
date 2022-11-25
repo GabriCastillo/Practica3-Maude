@@ -62,9 +62,9 @@ fmod EXPRESSION is
     op _!=_ : BoolVar Bool -> BTest .
     op eval : BTest Memory -> Bool .
 
-    op _=_ : IntVar Int -> ITest .
-    op _>’_ : IntVar Int -> ITest .
-    op _!=_ : IntVar Int -> ITest .
+    op _=_ : IntVar Int -> BTest .
+    op _>’_ : IntVar Int -> BTest .
+    op _!=_ : IntVar Int -> BTest .
     op eval : ITest Memory -> Bool .
 
     eq eval(V = B, [V, B'] M) = B == B' .
@@ -167,6 +167,9 @@ fmod SEQUENTIAL is
     
     eq eval(Q'[N], [Q', B] M) = B[N] .
     eq eval(Q[N], [Q, X] M) = X[N] .
+
+
+     
     
 
 endfm
@@ -184,10 +187,9 @@ mod PARALLEL++ is
     op [_,_] : Pid Program -> Process .
     op empty : -> Soup .
     op _|_ : Soup Soup -> Soup [prec 61 assoc comm id: empty] .
-    op {_,_} : Soup Memory -> MachineState .
+    op {_,_} : Soup Memory -> MachineState . 
 
-
-    vars P R : Program . 
+    vars P R W : Program . 
     var S : Soup .
     var U : UserStatement . 
     var L : LoopingUserStatement .
@@ -196,13 +198,12 @@ mod PARALLEL++ is
     var Q : IntVar . 
     var Q' : BoolVar . 
     var X : Int .
-    var A A' : Bool .
+    var A : Bool .
     var T : BTest . 
     vars IE IE' : IExpression .
     var BE : BExpression .
     var B : List{Bool} .
  
-
 
     rl {[I, L ; R] | S, M} => {[I, L ; R] | S, M} .
 
@@ -219,7 +220,13 @@ mod PARALLEL++ is
     if Q' in M =/= true .
 
     rl {[I, if T then P fi ; R] | S, M}  => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
+    rl {[I, if T then P fi ; R] | S, M}  => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
 
+   
+    rl {[I, if T then P else W fi ; R] | S, M}  => {[I, if eval(T, M) then P else W fi ; R] | S, M}  .   
+
+    rl {[I, repeat P until T li ; R] | S, M}  => {[I, (P ; if eval(T,M) then skip else (repeat P until T li) fi ; R)] | S, M} .
+    
 
     rl {[I, while T do P od ; R] | S, M}  => {[I, if eval(T, M) then (P ; while T do P od) else skip fi ; R] | S, M} .
 
@@ -230,7 +237,7 @@ mod PARALLEL++ is
     rl [BArrayInsert] : {[I, (Q'[IE] := BE) ; R] | S, [Q', A] M} => {[I, R] | S, 
     [Q' , A
 
-   ---  eval(IE, [Q', A] M) eval(BE, [Q', A] M)
+     eval(BE, [Q', A] M) --- eval(BE, [Q', A] M) 
     
     ] M} .
 
@@ -239,7 +246,7 @@ mod PARALLEL++ is
     crl [BArrayCreate] : {[I, (Q'[IE] := BE) ; R] | S, M} => {[I, R] | S, 
     [Q', Bnil
     
-  ---   eval(IE, M)  eval(BE, M)
+      eval(BE, M) --- eval(IE, M)
     
     ] M} 
     if Q' in M == false .
@@ -251,9 +258,6 @@ mod PARALLEL++ is
     crl [IArrayCreate] : {[I, (Q[IE] := IE') ; R] | S, M}  => {[I, R] | S, [Q, (Inil eval(IE, M) eval(IE', M))] M} 
     if Q in M == false .
 
-
-
-      
 endm
 
 
