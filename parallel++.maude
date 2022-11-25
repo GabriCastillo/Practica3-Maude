@@ -10,31 +10,14 @@ endv
 fmod MEMORY is
     pr INT .
     pr BOOL .
-    pr LIST{Int} .
-    pr LIST{Bool} .
+  
     sorts Memory IntVar BoolVar .
 
-    --- op Iturn : -> IntVar .
-    --- op Bturn : -> BoolVar .
-
-    subsort Int < List{Int} .
-    subsort Bool < List{Bool} .
-
-    op Inil : -> List{Int} [ctor] .
-    op _,_ : List{Int} List{Int}  -> List{Int}  [ctor assoc id: nil prec 42]  .
-
-    op Bnil : -> List{Bool} [ctor] .
-    op _,_ : List{Bool} List{Bool}  -> List{Bool}  [ctor assoc id: nil prec 42]  .
+    
  
 
-    op _[_] :  Int List{Int} -> Int .
-    op _[_] :  Int List{Bool} -> Bool .
+  
 
-    op _[_] :=_ : Int List{Int} Int -> List{Int} .
-    op _[_] :=_ : Int List{Bool} Bool -> List{Bool} .
-    
-    op [_,_] : IntVar List{Int} -> Memory .
-    op [_,_] : BoolVar List{Bool} -> Memory .
 
     op none : -> Memory .
     op __ : Memory Memory -> Memory [assoc comm id: none] .
@@ -48,8 +31,7 @@ fmod MEMORY is
     var M : Memory .
     var N E I : Int .
     var N' E' B : Bool .
-    var li : List{Int} .
-    var lb : List{Bool} .
+ 
 
     eq Q in [Q, N] M = true .
     eq Q in [W, N] M = Q in M .
@@ -60,23 +42,11 @@ fmod MEMORY is
     eq Q' in none = false .
 
 
-    eq N[Inil] = Inil .
-    eq s(N)[E li] = N[li] .
-    eq 0[E li] = E .
-
-    eq N[Bnil] = Bnil .
-    eq s(N)[E' lb] = N[lb] .
-    eq 0[E' lb] = E' .
-
-
-    eq N[Inil]:= E = E .
-    eq s(N)[E li]:= I = (E N[li]:= I)  .
-    eq 0[E li]:= I = E I li .
-
-    eq N[Bnil]:= E' = E' .
-    eq s(N)[E' lb]:= B = E' (N[lb]:= B)  .
-    eq 0[E' lb]:= B = E' B lb .
+    
 endfm
+
+
+
 
 fmod EXPRESSION is
     including MEMORY .
@@ -138,12 +108,49 @@ fmod EXPRESSION is
 
     eq eval(IE +’ IE’, M) = eval(IE, M) + eval(IE’, M) .
     eq eval(IE *’ IE’, M) = eval(IE, M) * eval(IE’, M) .
-    eq eval(IE -’ IE’, M) = eval(IE, M) (- eval(IE’, M)) .
+    eq eval(IE -’ IE’, M) = eval(IE, M) - eval(IE’, M) .
+
+endfm
+
+fmod ARRAYS is 
+    including MEMORY .
+    pr EXPRESSION .
+    pr INT .
+    pr BOOL .
+    pr LIST{Int} .
+    pr LIST{Bool} .
+
+    subsort Int < List{Int} .
+    subsort Bool < List{Bool} .
+    subsort List{Bool} < BExpression .
+    subsort List{Int}  < IExpression .
+
+
+    op Inil : -> List{Int} [ctor] .
+    op Bnil : -> List{Bool} [ctor] .
+
+    op _[_] :  IntVar IExpression -> List{Int} .
+    op _[_] :  BoolVar BExpression -> List{Bool} .
+
+    op _[_] :=_ : IntVar IExpression Int -> List{Int} .
+    op _[_] :=_ : BoolVar BExpression Bool -> List{Bool} .
+    
+    op [_,_] : IntVar List{Int} -> Memory .
+    op [_,_] : BoolVar List{Bool} -> Memory .
+
+
+    var li : List{Int} .
+    var lb : List{Bool} .
+    var N E I : Int .
+    var N' E' B : Bool .
+
+    
 
 endfm
 
 fmod SEQUENTIAL is
     protecting EXPRESSION .
+    protecting ARRAYS .
 
     sorts UserStatement LoopingUserStatement Program .
     subsort LoopingUserStatement < UserStatement < Program .
@@ -152,12 +159,28 @@ fmod SEQUENTIAL is
     op _;_ : Program Program -> Program [prec 61 assoc id: skip] .
     op _:=_ : BoolVar BExpression -> Program .
     op _:=_ : IntVar IExpression -> Program .
+    op _:=_ : List{Bool} BExpression -> Program .
+    op _:=_ : List{Int} IExpression -> Program .
 
     op if_then_fi : BTest Program -> Program .
     op while_do_od : BTest Program -> Program .
     op repeat_forever : Program -> Program .
     op if_then_else_fi : BTest Program Program -> Program . 
     op repeat_until_li : Program BTest -> Program .
+
+
+    var M : Memory .
+    var Q' : BoolVar .
+    var Q : IntVar .
+    var B : List{Bool} .
+    var X : List{Int} .
+    var N : IExpression .
+    var N' : BExpression .
+    
+    eq eval(Q'[N'], [Q', B] M) = B[N'] .
+    eq eval(Q[N], [Q, X] M) = X[N] .
+    
+
 endfm
 
 
@@ -186,8 +209,9 @@ mod PARALLEL++ is
     var  X : Int .
     var  A : Bool .
     var  T : BTest . 
-    var  IE : IExpression .
-    var  BE : BExpression .
+    var  IE IE' : IExpression .
+    var  BE BE' : BExpression .
+    var B : List{Bool} .
 
     rl {[I, L ; R] | S, M} => {[I, L ; R] | S, M} .
 
@@ -197,8 +221,11 @@ mod PARALLEL++ is
     rl {[I, (Q' := BE) ; R] | S, [Q', A] M} => {[I, R] | S, [Q', eval(BE, [Q', A] M)] M} .
 
 
-    crl {[I, (Q := IE) ; R] | S, M} => {[I, R] | S, [Q, eval(IE, M)] M} if Q in M =/= true .
-    crl {[I, (Q' := BE) ; R] | S, M} => {[I, R] | S, [Q', eval(BE, M)] M} if Q' in M =/= true .
+    crl {[I, (Q := IE) ; R] | S, M} => {[I, R] | S, [Q, eval(IE, M)] M} 
+    if Q in M =/= true .
+
+    crl {[I, (Q' := BE) ; R] | S, M} => {[I, R] | S, [Q', eval(BE, M)] M} 
+    if Q' in M =/= true .
 
     rl {[I, if T then P fi ; R] | S, M}  => {[I, if eval(T, M) then P else skip fi ; R] | S, M} .
 
@@ -206,6 +233,23 @@ mod PARALLEL++ is
     rl {[I, while T do P od ; R] | S, M}  => {[I, if eval(T, M) then (P ; while T do P od) else skip fi ; R] | S, M} .
 
     rl {[I, repeat P forever ; R] | S, M} => {[I, P ; repeat P forever ; R] | S, M} .
+
+    --- ARRAY OF BOOLEANS
+    --- Array exists, insert
+    rl [BArrayInsert] : {[I, (Q'[BE] := BE') ; R] | S, [Q', B] M} => {[I, R] | S, [Q', (B eval(BE, [Q', B] M) eval(BE', [Q', B] M))] M} .
+
+    --- Array does not exist, initialize
+    crl [BArrayCreate] :  {[I, (Q'[BE] := BE') ; R] | S, M} => {[I, R] | S, [Q', (Bnil eval(BE, M) eval(BE', M))] M} 
+    if Q' in M == false .
+
+    --- ARRAY OF INTEGERS
+    rl {[I, (Q[IE] := IE') ; R] | S, [Q, X] M}  => {[I, R] | S, [Q, (X eval(IE, [Q, X] M) eval(IE', [Q, X] M))] M} .
+
+    crl {[I, (Q[IE] := IE') ; R] | S, M}  => {[I, R] | S, [Q, (Inil eval(IE, M) eval(IE', M))] M} 
+    if Q in M == false .
+
+
+
       
 endm
 
