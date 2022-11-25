@@ -42,10 +42,12 @@ endfm
 fmod EXPRESSION is
     including MEMORY .
 
-    sort BExpression BTest .
+    sort Test .
+
+    sort BExpression .
     subsorts BoolVar Bool < BExpression .
 
-    sort IExpression ITest .
+    sort IExpression .
     subsorts IntVar Int < IExpression .
 
     var V' : IntVar .
@@ -58,14 +60,13 @@ fmod EXPRESSION is
     vars B B' : Bool .
     vars E E’ : BExpression .
 
-    op _=_ : BoolVar Bool -> BTest .
-    op _!=_ : BoolVar Bool -> BTest .
-    op eval : BTest Memory -> Bool .
+    op _=_ : BoolVar Bool -> Test .
+    op _!=_ : BoolVar Bool -> Test .
+    op eval : Test Memory -> Bool .
 
-    op _=_ : IntVar Int -> BTest .
-    op _>’_ : IntVar Int -> BTest .
-    op _!=_ : IntVar Int -> BTest .
-    op eval : ITest Memory -> Bool .
+    op _=_ : IntVar Int -> Test .
+    op _>’_ : IntVar Int -> Test .
+    op _!=_ : IntVar Int -> Test .
 
     eq eval(V = B, [V, B'] M) = B == B' .
     ceq eval(V = B, M) = B == false if V in M =/= true .
@@ -151,11 +152,11 @@ fmod SEQUENTIAL is
     op _:=_ : List{Bool} BExpression -> Program .
     op _:=_ : List{Int} IExpression -> Program .
 
-    op if_then_fi : BTest Program -> Program .
-    op while_do_od : BTest Program -> Program .
+    op if_then_fi : Test Program -> Program .
+    op while_do_od : Test Program -> Program .
     op repeat_forever : Program -> Program .
-    op if_then_else_fi : BTest Program Program -> Program . 
-    op repeat_until_li : Program BTest -> Program .
+    op if_then_else_fi : Test Program Program -> Program . 
+    op repeat_until_li : Program Test -> Program .
 
 
     var M : Memory .
@@ -167,10 +168,6 @@ fmod SEQUENTIAL is
     
     eq eval(Q'[N], [Q', B] M) = B[N] .
     eq eval(Q[N], [Q, X] M) = X[N] .
-
-
-     
-    
 
 endfm
 
@@ -199,7 +196,7 @@ mod PARALLEL++ is
     var Q' : BoolVar . 
     var X : Int .
     var A : Bool .
-    var T : BTest . 
+    var T : Test . 
     vars IE IE' : IExpression .
     var BE : BExpression .
     var B : List{Bool} .
