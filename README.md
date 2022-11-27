@@ -206,3 +206,27 @@ Como se puede observar, no se encuentra ningún contraejemplo.
 ## Ejercicio 3: El lenguaje PARALLEL++
 
 ### 12 - Comprueba utilizando el comando search la ausencia de bloqueo y la exclusión mutua de esa versión del algoritmo
+
+Comprobamos ausencia de bloqueos:
+
+```
+Maude> search initial =>! MS:MachineState .
+search in DEKKER++ : initial =>! MS:MachineState .
+
+No solution.
+states: 206  rewrites: 1971 in 6ms cpu (5ms real) (296747 rewrites/second)
+```
+
+Como podemos ver no hay estados de bloqueo.
+
+Comprobamos exclusión mútua:
+
+```
+Maude> search initial =>* {S | [1,crit ; R] | [2, crit ; P], M} .
+search in DEKKER++ : initial =>* {S | [1,crit ; R] | [2,crit ; P],M} .
+
+No solution.
+states: 206  rewrites: 1971 in 3ms cpu (2ms real) (592603 rewrites/second)
+```
+
+Como podemos ver hay exclusión mútua, ya que no hay estados en los que ambos procesos estén el la sección crítica.
