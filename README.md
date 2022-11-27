@@ -148,7 +148,7 @@ Como la ejecucoion no termina, entonces es no terminante.
 
 ### 9 - ¿Es finito el espacio de búsqueda alcanzable a partir de estados definidos con el operador initial? Utiliza el comando search para comprobar la exclusión mutua del sistema con 5 procesos.
 
-No, **no es finito** puesto que si un cliente coge un ticket y lo suelta seguidamente, lo que generamos es el mismo estado con _last_ incrementado en 1. Este proceso pude repetirse infinitamente, dando como resultado un infinito número de estados equivalentes con last diferentes.
+No, **no es finito** puesto que si un cliente coge un ticket y lo suelta seguidamente, lo que generamos es el mismo estado con _last_ incrementado en 1. Este proceso pude repetirse infinitamente, dando como resultado un infinito número de estados equivalentes con _last_ diferentes.
 
 Si el espacio de búqueda fuese finito, el comando _search_ siempre terminaría. En cambio el siguiente comando no termina:
 
@@ -169,15 +169,14 @@ Maude> search [1] initial(5) =>* [[C < O : BProcess | mode: crit, number: P:Nat 
 Debug(1)> q
 Bye.
 ```
-Como se puede observar, no es posible encontrar un contraejemplo, ya que el espacio de busqueda es infinito.
+
+Como el espacio de busqueda es infinito, a pesar de que no encuentre ningún contraejemplo no podemos asegurar que no lo haya. Necesitamos una abstracción. 
 
 ### 10 - La abstracción proporcionada por el módulo ABSTRACT-BAKERY no es suficiente para este sistema modificado, ¿por qué? Especifica una abstracción válida para este nuevo sistema en una módulo ABSTRACT-BAKERY+.
 
-Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[0, last - next]`, ya el `last - next` no tiene como cota máxima el número de clientes en la panadería. Ya que un cliente al coger y soltar el ticket incrementa en 1 la diferencia `last - next`, y esto puede hacerse infinitamente. 
+Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[1, last - next + 1]`, el `last - next + 1` **no** tiene como cota máxima el número de clientes en la panadería. Ya que un cliente al coger y soltar el ticket incrementa en 1 la diferencia `last - next`, y esto puede hacerse infinitamente. 
 
 ### 11 - Utiliza la abstracción anterior para comprobar la no existencia de bloqueos y la exclusión mutua utilizando el comando search.
-
-**Nota**: Para este ejercicio hemos tenido que modificar el bakery.maude para añadir una condición a la regla to _to\_crit_ para que no aplicar la regla si ya hay un _crit_. De modo que no puedan habber dos procesos en la sección crítica. El archivo modificado se llama _bakery\_ej2.maude_. 
 
 Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
 
@@ -186,7 +185,7 @@ Maude> search initial(5) =>! S:GBState .
 search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
 
 No solution.
-states: 12530  rewrites: 20363637 in 7504ms cpu (7558ms real) (2713392 rewrites/second)
+states: 651  rewrites: 531636 in 89ms cpu (89ms real) (5916664 rewrites/second)
 ```
 
 Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos debería mostrar una configuracion de bloqueo, pero no hay soluciones, por lo que no hay estados de bloqueo.
@@ -195,11 +194,11 @@ Comprobamos la exclusión mútua para 5 procesos:
 
 ```
 Maude> search [1] initial(5) =>* [[C < N:Nat : BProcess | mode: crit, number: M:Nat > < N':Nat : BProcess | mode: crit,number: M':Nat >]] such that N:Nat =/= N':Nat .
-search [1] in ABSTRACT-BAKERY+ : initial(5) =>* [[C < N : BProcess | mode: crit,number: M:Nat > < N' : BProcess | mode: crit,number:
-    M':Nat >]] such that N =/= N' = true .
+search [1] in ABSTRACT-BAKERY+ : initial(5) =>* [[C < N : BProcess | mode: crit,number: M:Nat > < N' : BProcess | mode: crit,number: M':Nat >]] such
+    that N =/= N' = true .
 
 No solution.
-states: 12530  rewrites: 20363637 in 9293ms cpu (9352ms real) (2191187 rewrites/second)
+states: 651  rewrites: 531636 in 89ms cpu (91ms real) (5923586 rewrites/second)
 ```
 
 Como se puede observar, no se encuentra ningún contraejemplo.
