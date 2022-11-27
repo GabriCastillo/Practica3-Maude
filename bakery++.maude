@@ -1,0 +1,61 @@
+load parallel++.maude
+
+mod BAKERY++ is
+    inc PARALLEL++ .
+
+    op crit : -> UserStatement .
+    op noCrit : -> LoopingUserStatement .
+    ops code1 code2 : -> Program .
+    op initial : -> MachineState .
+    op choosing : -> BoolVar .
+    ops number i THREADS : -> IntVar .
+
+    var N : Int .
+    var L : NeList{Int} .
+    var  M : Memory .
+    vars P R : Program .
+    var  S : Soup . 
+    var  I : Pid .
+
+    op max : NeList{Int} -> Int .
+    eq max(N) = N .
+    eq max(N L) = max(N, max(L)) .
+
+    eq code1 
+      = repeat 
+            choosing[1] := true ;
+            number[1] := max(number);
+            choosing[1] := false ;
+            i := 1 ; 
+            while THREADS >' 1 do 
+                while choosing[i] = true do skip od ;
+                while (number[i] != 0) & (number[1] >' number[i]) do skip od ;
+                i := i + 1
+            od ; 
+            crit ;
+            number[1] := 0 ; 
+            noCrit
+        until true != true li .
+
+    eq code2 
+      = repeat 
+            choosing[2] := true ;
+            number[2] := max(number);
+            choosing[2] := false ;
+            while THREADS >' 1 do 
+                while choosing[i] = true do skip od ;
+                while (number[i] != 0) & (number[2] >' number[i]) do skip od ;
+                i := i + 1
+            od ; 
+            crit ;
+            number[2] := 0 ; 
+            noCrit
+        until true != true li .
+
+    eq initial = { [1, code1] | [2, code2], [THREADS, 2]} .
+endm
+
+eof
+
+search initial =>! MS:MachineState .
+search initial =>* {S | [1,crit ; R] | [2, crit ; P], M} .

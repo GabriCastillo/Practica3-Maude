@@ -67,7 +67,7 @@ fmod EXPRESSION is
     op eval : BExpression Memory -> Bool .
 
     op _=_ : IExpression IExpression -> Test .
-    op _>’_ : IExpression IExpression -> Test .
+    op _>'_ : IExpression IExpression -> Test .
     op _!=_ : IExpression IExpression -> Test .
 
     op _&_ : Test Test -> Test [comm assoc] .
@@ -87,20 +87,20 @@ fmod EXPRESSION is
 
 
     eq eval(IE' = IE, M) =  eval(IE,M) == eval(IE',M)  .
-    eq eval(IE' >’ IE, M) =  eval(IE,M) > eval(IE',M)  .
+    eq eval(IE' >' IE, M) =  eval(IE,M) > eval(IE',M)  .
     eq eval(IE' != IE, M) =  eval(IE,M) =/= eval(IE',M)  .
 
     eq eval(IB' = IB, M) =  eval(IB,M) == eval(IB',M)  .
     eq eval(IB' != IB, M) =  eval(IB,M) =/= eval(IB',M)  .
 
-    op _+’_ : IExpression IExpression -> IExpression [ctor] .
-    op _*’_ : IExpression IExpression -> IExpression [ctor] .
-    op _-’_ : IExpression IExpression -> IExpression [ctor] .
+    op _+'_ : IExpression IExpression -> IExpression [ctor] .
+    op _*'_ : IExpression IExpression -> IExpression [ctor] .
+    op _-'_ : IExpression IExpression -> IExpression [ctor] .
     op eval : IExpression Memory -> Int .
 
-    eq eval(IE +’ IE', M) = eval(IE, M) + eval(IE', M) .
-    eq eval(IE *’ IE', M) = eval(IE, M) * eval(IE', M) .
-    eq eval(IE -’ IE', M) = _-_ (eval(IE, M), eval(IE', M))  .
+    eq eval(IE +' IE', M) = eval(IE, M) + eval(IE', M) .
+    eq eval(IE *' IE', M) = eval(IE, M) * eval(IE', M) .
+    eq eval(IE -' IE', M) = _-_ (eval(IE, M), eval(IE', M))  .
 
 endfm
 
