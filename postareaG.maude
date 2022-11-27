@@ -1,0 +1,81 @@
+load parallel++.maude
+
+mod BAKERY++ is
+    inc PARALLEL++ .
+
+    op crit : -> UserStatement .
+    op noCrit : -> LoopingUserStatement .
+    ops code0 code1 : -> Program .
+    op initial : -> MachineState .
+    op choosing : -> BoolVar .
+    ops numbers i1 i0 M1 M0 : -> IntVar .
+    
+    var  M : Memory .
+    vars P R : Program .
+    var  S : Soup . 
+    var  I : Pid .
+
+    eq code0 
+      = repeat
+            choosing[0] := true ; 
+            i0 := 0 ;
+            M0 := 0 ;
+
+            while 2 >' i0 do
+                if numbers[i0] >' M0 then
+                    M0 := numbers[i0]
+                fi ;
+                i0 := i0 +' 1 
+            od ;
+            
+            numbers[0] := M0 +' 1 ;
+            choosing[0] := false ;
+
+            i0 := 0 ;
+            
+            while 2 >' i0 do 
+                while choosing[i0] = true do skip od ;
+                while (numbers[i0] != 0) & ((numbers[0] >' numbers[i0]))  do skip od ;
+                i0 := i0 + 1
+            od ; 
+            crit ;
+            numbers[0] := 0 ; 
+            noCrit
+        forever .
+
+
+    eq code1 
+      = repeat
+            choosing[1] := true ; 
+            i1 := 0 ;
+            M1 := 0 ;
+
+            while 2 >' i1 do
+                if numbers[i1] >' M1 then
+                    M1 := numbers[i1]
+                fi ;
+                i1 := i1 +' 1 
+            od ;
+            
+            numbers[1] := M1 +' 1 ;
+            choosing[1] := false ;
+
+            i1 := 0 ;
+            
+            while 2 >' i1 do 
+                while choosing[i1] = true do skip od ;
+                while ((numbers[i1] != 0) & (numbers[1] >' numbers[i1])) do skip od ;
+                i1 := i1 + 1
+            od ; 
+            crit ;
+            numbers[1] := 0 ; 
+            noCrit
+        forever .
+
+    eq initial = { [0, code0] | [1, code1], [choosing ,false false] [numbers,0 0]} .
+endm
+
+eof
+
+search initial =>! MS:MachineState .
+search initial =>* {S | [1,crit ; R] | [2, crit ; P], M} .
