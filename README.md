@@ -23,12 +23,10 @@ Como podemos ver el estado generado no termina y por tanto no es terminante.
 
 **El espacio de búqueda es infinito**. Dado que cada vez que un cliente (_BProcess_) hace un ciclo---Entendiendo hacer un ciclo como que pasas de sleep a wait, de wait a crit y de crit de nuevo a sleep---el número del tícket expendido por el dispensador (_last_) ha incrementado en al menos 1, y dado que no es terminante; se pueden generar infinitos estados en lo que único que cambia es el número del ticket expendido, que puede tomar como valor todo número naturarl (_Nat_).    
 
-```
-Maude> search [1] initial(5) =>* [[< O:Nat : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit, number: P':Nat > C:Configuration ]] s.t. O:Nat =/= O':Nat .
-search [1] in Bakery : initial(5) =>* [[C < O : BProcess | mode: crit, number: P > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .
-Debug(1)> q
-Bye.
-```
+`Maude> search [1] initial(5) =>* [[< O:Nat : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit, number: P':Nat > C:Configuration ]] s.t. O:Nat =/= O':Nat .`
+`search [1] in Bakery : initial(5) =>* [[C < O : BProcess | mode: crit, number: P > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .`
+`Debug(1)> q`
+`Bye.`
 
 Como podemos ver no podemos demostrarlo con el comando search, ya que al ser el espacio de búqueda infinito, es imposible explorar todo el especio de búqueda. Lo único que podemos decir es que no lo ha encontrado en lo que ha explorado. 
 
@@ -47,7 +45,13 @@ omo podemos ver no podemos demostrarlo con el comando search, ya que al ser el e
 
 ### 4 - Justifica la validez de la abstracción (protección de los booleanos, confluencia y terminación de la parte ecuacional, y coherencia de ecuaciones y reglas).
 
-Por cómo están definidas las reglas de este problema, los estados [[< O : Dispenser | next: s(N), last: s(M) > < 0 : BProcess | mode: M, number: s(N0) > < 1 : BProcess | mode: M, number: s(N1) > ...]] son equivalentes a [[< O : Dispenser | next: N, last: s(M) > < 0 : BProcess | mode: M, number: N0 > < 1 : BProcess | mode: M, number: N1 > ...]]. 
+Por cómo están definidas las reglas de este problema, los estados
+
+`[[< O : Dispenser | next: s(N), last: s(M) > < 0 : BProcess | mode: M, number: s(N0) > < 1 : BProcess | mode: M, number: s(N1) > ...]]` 
+
+son equivalentes a 
+
+`[[< O : Dispenser | next: N, last: s(M) > < 0 : BProcess | mode: M, number: N0 > < 1 : BProcess | mode: M, number: N1 > ...]]` 
 
 - **Protección de los booleanos**: No se identifican _true_ y _false_, luego hay protección de los booleanos.
 
@@ -78,7 +82,7 @@ Sea _x_ (irreducible) el estado en el que había un cliente esperando al que le 
 
 Sea `M' = M - N`
 
-`x = [[< O : Dispenser | next: s(N), last: s(M) > < cliente : BProcess | mode: wait, number: s(N) >]]`.
+`x = [[< O : Dispenser | next: s(N), last: s(M) > < cliente : BProcess | mode: wait, number: s(N) >]]`
 
 `rl(x) = [[< O : Dispenser | next: sss(N), last: sss(M) > < cliente : BProcess | mode: wait, number: sss(N) >]]`
 
@@ -162,13 +166,10 @@ Bye.
 
 Comprobamos la exclusión mútua para 5 procesos:
 
-```
-Maude> load bakery+.maude
-Maude> rew initial(5) .
-Maude> search [1] initial(5) =>* [[C < O : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .
-Debug(1)> q
-Bye.
-```
+`Maude> rew initial(5) .`
+`Maude> search [1] initial(5) =>* [[C < O : BProcess | mode: crit, number: P:Nat > < O':Nat : BProcess | mode: crit,number: P':Nat >]] such that O =/= O':Nat = true .`
+`Debug(1)> q`
+`Bye.`
 
 Como el espacio de busqueda es infinito, a pesar de que no encuentre ningún contraejemplo no podemos asegurar que no lo haya. Necesitamos una abstracción. 
 
@@ -180,26 +181,22 @@ Por que a pesar de que el intervalo `[N + next, N + last]` pase a `[1, last - ne
 
 Primero que nada, comprobamos si existe algun estado de bloqueo mediante el siguiente comando:
 
-```
-Maude> search initial(5) =>! S:GBState .
-search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .
 
-No solution.
-states: 651  rewrites: 531636 in 89ms cpu (89ms real) (5916664 rewrites/second)
-```
+`Maude> search initial(5) =>! S:GBState .`
+`search in ABSTRACT-BAKERY+ : initial(5) =>! S:GBState .`
+
+`No solution.`
+`states: 651  rewrites: 531636 in 89ms cpu (89ms real) (5916664 rewrites/second)`
 
 Como podemos observar, se ha hecho uso del comando _=>!_ el cual nos debería mostrar una configuracion de bloqueo, pero no hay soluciones, por lo que no hay estados de bloqueo.
 
 Comprobamos la exclusión mútua para 5 procesos:
 
-```
-Maude> search [1] initial(5) =>* [[C < N:Nat : BProcess | mode: crit, number: M:Nat > < N':Nat : BProcess | mode: crit,number: M':Nat >]] such that N:Nat =/= N':Nat .
-search [1] in ABSTRACT-BAKERY+ : initial(5) =>* [[C < N : BProcess | mode: crit,number: M:Nat > < N' : BProcess | mode: crit,number: M':Nat >]] such
-    that N =/= N' = true .
+`Maude> search [1] initial(5) =>* [[C < N:Nat : BProcess | mode: crit, number: M:Nat > < N':Nat : BProcess | mode: crit,number: M':Nat >]] such that N:Nat =/= N':Nat .`
+`search [1] in ABSTRACT-BAKERY+ : initial(5) =>* [[C < N : BProcess | mode: crit,number: M:Nat > < N' : BProcess | mode: crit,number: M':Nat >]] such that N =/= N' = true .`
 
-No solution.
-states: 651  rewrites: 531636 in 89ms cpu (91ms real) (5923586 rewrites/second)
-```
+`No solution.`
+`states: 651  rewrites: 531636 in 89ms cpu (91ms real) (5923586 rewrites/second)`
 
 Como se puede observar, no se encuentra ningún contraejemplo.
 

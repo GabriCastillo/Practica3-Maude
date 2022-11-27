@@ -60,5 +60,5 @@ endm
 
 eof
 
-search initial =>* {S | [1,crit ; R] | [2, crit ; P], M} .
 search initial =>! MS:MachineState .
+search initial =>* {S | [1,crit ; R] | [2, crit ; P], M} .
